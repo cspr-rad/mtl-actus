@@ -7,7 +7,7 @@ structure LTS where
   initial : List state
   transition : state -> action -> state -> Prop
   atomic_proposition : Type
-  ap_termset : TermSet atomic_proposition
+  ap_laws : AtomicProp atomic_proposition
   labelling : state -> Lean.HashSet atomic_proposition
 
 /-

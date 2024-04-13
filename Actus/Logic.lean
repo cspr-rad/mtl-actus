@@ -1,10 +1,11 @@
 import Lean.Data.HashSet
 import Actus.Types
+open Time
 /-!
 Our MTL admits discrete time intervals.
 -/
 namespace MetricTemporal
-  variable {T : Type} [TermSet T]
+  variable {T : Type} [AtomicProp T]
 
   inductive Proposition (T : Type) : Type where
   | mt_t : Proposition T
@@ -86,3 +87,22 @@ namespace MetricTemporal
     bind := Proposition.bind
 
 end MetricTemporal
+
+namespace MetricTemporalSemantics
+  open MetricTemporal Time
+  variable (T : Type) [AtomicProp T]
+
+  def Model (T : Type) : Type := Timestamp -> T
+
+  def holds (γ : Model T) (t : TimeDelta) (φ : Proposition T) : Prop :=
+    match φ with
+    | mtt => True
+    | [[x]] => x = γ t.toTimestamp
+    | ~ φ => ¬ holds γ t φ
+    | φ and ψ => holds γ t φ ∧ holds γ t ψ
+    | φ U ψ in w => ∃ u, w.incr t |>.contains u.toTimestamp -> holds γ u ψ ∧ forall v, u < v ∧ v < t -> holds γ v φ
+    | φ S ψ in w => ∃ u, w.decr t |>.contains u.toTimestamp -> holds γ u ψ ∧ forall v, u < v ∧ v < t -> holds γ v φ
+
+  -- notation γ ";" t "⊨" φ => holds γ t φ -- leads to mysterious bugs
+
+end MetricTemporalSemantics

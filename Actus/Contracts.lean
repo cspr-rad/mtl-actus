@@ -1,6 +1,6 @@
 import Actus.Types
 import Actus.Logic
-open MetricTemporal
+open Time MetricTemporal
 
 /-! # ACTUS Contracts -/
 /- A contract module is of signaturea -/
@@ -22,7 +22,7 @@ namespace PAM
 
   def Contract := Proposition Event deriving BEq, Hashable, Repr
 
-  def contract_length (terms : Terms) : Window := (terms.start_date, Timestamp.add_delta terms.start_date terms.maturity)
+  def contract_length (terms : Terms) : Window := (terms.start_date, terms.start_date.add_delta terms.maturity)
 
   /-! some properties of a pam execution:
     * the principal is repaid at maturity
@@ -43,8 +43,8 @@ namespace SWPPV
 
   structure Terms where
     swap_period : Window
-    rate_td : TimeDelta
-    payment_td : TimeDelta
+    rate_dt : TimeDelta
+    payment_dt : TimeDelta
     deriving Repr, BEq, Hashable
 
   inductive Event :=
@@ -60,9 +60,9 @@ namespace SWPPV
     {□ within} {◇ (within.1, within.1.add_delta interval)} [[event]]
   -- TODO: one thing i think i don't like about this is we're doing `add_delta` to the end of the swap period..
   def contract (terms : Terms) : Contract :=
-    let fixedLegPayments := periodic_event Event.FixedLegPayment terms.payment_td terms.swap_period
-    let floatingLegPayments := periodic_event Event.FloatingLegPayment terms.payment_td terms.swap_period
-    let rateResets := periodic_event Event.RateReset terms.rate_td terms.swap_period
+    let fixedLegPayments := periodic_event Event.FixedLegPayment terms.payment_dt terms.swap_period
+    let floatingLegPayments := periodic_event Event.FloatingLegPayment terms.payment_dt terms.swap_period
+    let rateResets := periodic_event Event.RateReset terms.rate_dt terms.swap_period
     let maturity := {◇ terms.swap_period} [[Event.Maturity]]
     fixedLegPayments and floatingLegPayments and rateResets and maturity
 
@@ -84,7 +84,6 @@ namespace ANN
 
   def contract_length (terms : Terms) : Window := (terms.start_date, Timestamp.add_delta terms.start_date terms.maturity)
   def x := 1
-  #check x.toUInt64
 
   def generate_payment_schedule (start : Timestamp) (frequency : TimeDelta) (maturity : TimeDelta) : List Timestamp :=
   List.range (maturity.dt.toNat / frequency.dt.toNat) |>.map
