@@ -90,9 +90,9 @@ end MetricTemporal
 
 namespace MetricTemporalSemantics
   open MetricTemporal Time
-  variable (T : Type) [AtomicProp T]
+  variable {T : Type} [AtomicProp T]
 
-  def Model (T : Type) : Type := Timestamp -> T
+  def Model (T : Type) : Type := Timestamp -> Option T
 
   def holds (γ : Model T) (t : TimeDelta) (φ : Proposition T) : Prop :=
     match φ with
@@ -103,6 +103,50 @@ namespace MetricTemporalSemantics
     | φ U ψ in w => ∃ u, w.incr t |>.contains u.toTimestamp -> holds γ u ψ ∧ forall v, u < v ∧ v < t -> holds γ v φ
     | φ S ψ in w => ∃ u, w.decr t |>.contains u.toTimestamp -> holds γ u ψ ∧ forall v, u < v ∧ v < t -> holds γ v φ
 
-  -- notation γ ";" t "⊨" φ => holds γ t φ -- leads to mysterious bugs
+-- inductive holds' {T : Type} (γ : Model T) (t : TimeDelta) : Proposition T → Prop
+-- | mtt_holds : holds' γ t mtt
+-- | atom_holds : (exists x, some x = γ t.toTimestamp) -> holds' γ t [[x]]
+-- | neg_holds φ : ¬ holds' γ t φ → holds' γ t (~ φ)
+-- | and_holds φ ψ : holds' γ t φ → holds' γ t ψ → holds' γ t (φ and ψ)
+-- | until_holds φ ψ w : (∃ (u : TimeDelta), w.incr t |>.contains u.toTimestamp -> holds' γ u ψ -> (∀ v, u < v ∧ v < t → holds' γ v φ)) →
+--   holds' γ t (φ U ψ in w)
+-- | since_holds φ ψ w : (∃ (u : TimeDelta), w.decr t |>.contains u.toTimestamp -> holds' γ u ψ -> (∀ v, u < v ∧ v < t → holds' γ v φ)) →
+--   holds' γ t (φ S ψ in w)
+
+  notation:70 "(" γ ";" t ")⊨" φ => holds γ t φ
 
 end MetricTemporalSemantics
+
+namespace MetricTemporalSoundness
+  open MetricTemporal Time
+  variable {E : Type} [AtomicProp T]
+
+  inductive Provable (t : Timestamp) : Proposition E -> Prop :=
+  | axiom_tt : Provable t mtt
+  | axiom_atom {x : E} :  Provable t [[x]]
+  | negation_intro {φ : Proposition E} : Provable t φ -> Provable t (~ φ)
+  | conjunction_intro {φ ψ : Proposition E} : Provable t φ -> Provable t ψ -> Provable t (φ and ψ)
+  | until_intro {φ ψ : Proposition E} {w : Window} : Provable t φ -> Provable t ψ -> Provable t (φ U ψ in w)
+  | since_intro {φ ψ : Proposition E} {w : Window} : Provable t φ -> Provable t ψ -> Provable t (φ S ψ in w)
+
+  theorem Sound : forall (φ : Proposition E) (t : Timestamp),
+    Provable t φ -> forall (γ : MetricTemporalSemantics.Model E), (γ;t.toTimeDelta)⊨φ :=
+    by intros φ t H; induction H with
+    | axiom_tt => intros γ; trivial
+    | axiom_atom => intros γ; sorry
+    | negation_intro H IH => intros γ; sorry
+    | conjunction_intro H1 H2 IH1 IH2 => intros γ; specialize IH1 γ; specialize IH2 γ;
+                                         constructor; exact IH1; exact IH2
+    | until_intro H1 H2 IH1 IH2 => intros γ
+                                   unfold MetricTemporalSemantics.holds
+                                   constructor
+                                   intro H3
+                                   constructor
+                                   specialize IH2 γ
+                                   specialize IH1 γ
+                                   sorry
+                                   sorry
+                                   sorry
+    | since_intro φ ψ H1 H2 => intros γ; sorry
+
+end MetricTemporalSoundness

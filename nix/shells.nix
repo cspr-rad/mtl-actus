@@ -15,7 +15,7 @@
               shellHook = "echo ${greeting}";
               buildInputs = [ lean4 ];
             };
-          typst =
+          comms =
             with pkgs;
             mkShell {
               name = "mtlactus-typesetting";
@@ -25,6 +25,9 @@
                 typstfmt
                 typst-lsp
                 typst-live
+                pandoc
+                texliveSmall
+                mermaid-cli
               ];
             };
         };

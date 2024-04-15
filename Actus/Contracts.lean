@@ -18,17 +18,12 @@ namespace PAM
   | Maturity : Event
   | PrincipalRepayment : Event
   | InterestPayment : Event
-    deriving BEq, Hashable, Repr
+    deriving BEq, Hashable, Repr, DecidableEq
 
   def Contract := Proposition Event deriving BEq, Hashable, Repr
 
   def contract_length (terms : Terms) : Window := (terms.start_date, terms.start_date.add_delta terms.maturity)
 
-  /-! some properties of a pam execution:
-    * the principal is repaid at maturity
-    * the interest is paid at the end of each month
-    * the principal is repaid at the end of the last month
-  !-/
   def ip_continuous_till_mat (terms : Terms) : Contract :=
     let cl := contract_length terms;
     {□ cl} ([[Event.InterestPayment]] implies
@@ -45,7 +40,7 @@ namespace SWPPV
     swap_period : Window
     rate_dt : TimeDelta
     payment_dt : TimeDelta
-    deriving Repr, BEq, Hashable
+    deriving BEq, Hashable, Repr
 
   inductive Event :=
   | Maturity : Event
@@ -83,7 +78,6 @@ namespace ANN
   def Contract := Proposition Event deriving BEq, Hashable, Repr
 
   def contract_length (terms : Terms) : Window := (terms.start_date, Timestamp.add_delta terms.start_date terms.maturity)
-  def x := 1
 
   def generate_payment_schedule (start : Timestamp) (frequency : TimeDelta) (maturity : TimeDelta) : List Timestamp :=
   List.range (maturity.dt.toNat / frequency.dt.toNat) |>.map

@@ -1,22 +1,23 @@
-class AtomicProp (T : Type) extends BEq T, Hashable T
-
-structure Party where
-  name : String
-  balance : Int -- Money
-  deriving BEq, Hashable, Repr
+class AtomicProp (T : Type) extends BEq T, Hashable T --, Decidable T
 
 def Execution : Type -> Type := IO deriving Functor, Applicative, Monad
 
 structure Money where
   amount : Int
-  deriving BEq, Hashable, Repr
+  deriving BEq, Hashable, Repr, DecidableEq
+
+structure Party where
+  name : String
+  balance : Money
+  deriving BEq, Hashable, Repr, DecidableEq
+
 
 def Money.map (f : Int -> Int) (m : Money) : Money :=
   { amount := f m.amount }
 
 structure Scalar where
   value : Int
-  deriving BEq, Hashable, Repr
+  deriving BEq, Hashable, Repr, DecidableEq
 
 def Scalar.map (f : Int -> Int) (s : Scalar) : Scalar :=
   { value := f s.value }
@@ -25,7 +26,7 @@ namespace Time
   inductive Timestamp : Type where
     | t : UInt64 -> Timestamp
     | infinity : Timestamp
-    deriving BEq, Hashable, Repr
+    deriving BEq, Hashable, Repr, DecidableEq
 
   instance : Ord Timestamp where
     compare t1 t2 := match t1, t2 with
@@ -71,7 +72,7 @@ namespace Time
 
   structure TimeDelta where
     dt : UInt64
-    deriving BEq, Hashable, Repr, Ord
+    deriving BEq, Hashable, Repr, Ord, DecidableEq
 
   instance : LT TimeDelta where
     lt t1 t2 := t1.dt < t2.dt
@@ -91,6 +92,15 @@ namespace Time
 
   def TimeDelta.toTimestamp (td : TimeDelta) : Timestamp :=
     Timestamp.t td.dt
+
+  def Timestamp.toTimeDelta (t : Timestamp) : TimeDelta :=
+    match t with
+    | Timestamp.t time => { dt := time }
+    | _ => { dt := 0 }
+
+  theorem TimeDelta.inv (td : TimeDelta) : td = td.toTimestamp.toTimeDelta :=
+    by unfold toTimestamp Timestamp.toTimeDelta <;> simp
+
 end Time
 
 namespace Interval
@@ -134,7 +144,7 @@ end Interval
 
 def Window : Type := Interval.T deriving BEq, Hashable, Repr
 
-namespace State
+namespace StateType
 
   inductive ContractPerformance : Type :=
   | performant
@@ -152,24 +162,24 @@ namespace State
   | boundaryLeg2ActiveFlag : Bool -> T
   | contractPerformance : ContractPerformance -> T
   | exerciseAmount : Money -> T
-  | exerciseDate : Timestamp -> T
+  | exerciseDate : Time.Timestamp -> T
   | feeAccrued : Money -> T
   | interestCalculationBaseAmount : Money -> T
   | interestScalingMultiplier : Scalar -> T
-  | maturityDate : Timestamp -> T
+  | maturityDate : Time.Timestamp -> T
   | nextPrincipalRedemptionPayment : Money -> T
   | nominalInterestRate : Money -> T
   | nominalInterestRate2 : Money -> T
-  | nonPerformingDate : Timestamp -> T
+  | nonPerformingDate : Time.Timestamp -> T
   | notionalPrincipal : Money -> T
   | notionalPrincipal2 : Money -> T
   | notionalScalingMultiplier : Money -> T
-  | statusDate : Timestamp -> T
-  | terminationDate : Timestamp -> T
+  | statusDate : Time.Timestamp -> T
+  | terminationDate : Time.Timestamp -> T
 
-end State
+end StateType
 
-namespace Event
+namespace EventType
   inductive T : Type :=
   | monitoring
   | initialExchange
@@ -196,4 +206,4 @@ namespace Event
   | boundaryMonitor
   | boundary
 
-end Event
+end EventType

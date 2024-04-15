@@ -1,0 +1,27 @@
+#+TITLE: Executing Finance in Metric Temporal Logic
+#+SUBTITLE: A Formal Verification Schema
+#+AUTHOR: Quinn Dougherty
+#+EMAIL: quinn@casper.network
+#+DATE: $\today$
+#+BIBLIOGRAPHY: ./b.bib
+
+#+BEGIN_abstract
+colorem coipsum
+#+END_abstract
+
+* Introduction
+lorem ipsum
+* Contributions
+
+* Prior Work
+
+** Algorithmic Contract Types Unified Standard
+State machine notions introduced by [cite:@Brammertz2019SmartCD]
+
+** Algebraic and Inductively defined financial interaction
+[cite:@Jones2000ComposingCA] defined an algebra for contracts of two parties. In [cite:@Bahr2015CertifiedSM] a contract for more than two parties can be well-typed.
+
+** Contract based design
+
+* Bibliography
+#+PRINT_BIBLIOGRAPHY:

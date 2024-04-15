@@ -12,6 +12,10 @@
           inherit (inputs) self;
           inherit pkgs;
         };
+        whitepaper-typst = import ./whitepaper/typst.nix {
+          inherit (inputs) self;
+          inherit pkgs;
+        };
       };
     };
 }

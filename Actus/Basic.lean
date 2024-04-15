@@ -2,8 +2,8 @@ import Actus.Trace
 import Actus.Contracts
 open Time
 
-def PAMTrace := Trace.T PAM.Event
-def SWPPVTrace := Trace.T SWPPV.Event
+def PAMTrace := Trace PAM.Event
+def SWPPVTrace := Trace SWPPV.Event
 
 -- Fixed leg payment version
 def pam_swppv_event_map (e : PAM.Event) : SWPPV.Event :=
@@ -27,7 +27,7 @@ def swppv_pam_event_lift (e : SWPPV.Event) : PAM.Contract :=
 def transform_swppv_contract (p : SWPPV.Contract) : PAM.Contract :=
   p >>= swppv_pam_event_lift
 
-namespace Test
+namespace UnitTest
   def somePam : PAM.Terms := {
     principal := { amount := 100 },
     interest_rate := fun _ => { value := 1 },
@@ -41,12 +41,15 @@ namespace Test
     payment_dt := { dt := 1 },
   }
 
-  #eval transform_swppv_contract <| SWPPV.contract <| someSwppv
-
+  -- #eval transform_swppv_contract <| SWPPV.contract <| someSwppv
+  -- TODO
   -- #eval contract someTerms
-end Test
+end UnitTest
+
 -- TODO: https://chat.openai.com/c/f756902c-9ce3-4c76-b1bc-9ef47716103c pick up here with:
 -- - composing pam with swap
 -- - "trace" executions and their validation
+
+-- TODO: we could write a normalizer?
 
 def hello := "world"
