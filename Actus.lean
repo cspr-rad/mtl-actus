@@ -3,6 +3,6 @@
 import «Actus».Basic
 import «Actus».Types
 import «Actus».Logic
-import «Actus».LabeledTransitionSystem
+import «Actus».Automata
 import «Actus».Trace
 import «Actus».Contracts
