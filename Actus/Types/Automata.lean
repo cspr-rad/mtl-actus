@@ -1,4 +1,7 @@
 import Lean.Data.RBMap
+import Actus.Types.Classes
+
+variable {Alphabet : Type} [AtomicProp Alphabet]
 
 structure State where
   idx : Nat
@@ -27,10 +30,25 @@ inductive GuardOp : Type :=
 | ge
 | gt
 
--- TODO: change to `structure ExecutionEntry` and `def Execution := List ExecutionEntry`
-structure Execution (Alphabet : Type) where
-  states : List State
-  symbols : List Alphabet
-  clocks : List ClockMap
+namespace Execution
+  -- TODO: change to `structure ExecutionEntry` and `def Execution := List ExecutionEntry`
+  structure Entry where
+    state : State
+    symbol : Alphabet
+    clockMap : ClockMap
 
-def Trace Alphabet := List Alphabet
+  def Fragment := List (@Entry Alphabet)
+
+  def TraceFragment := List Alphabet
+  def Fragment.toTrace (e : @Fragment Alphabet) : @TraceFragment Alphabet :=
+    e.map (fun x => x.symbol)
+
+  def PathFragment := List State
+  def Fragment.toPath (e : @Fragment Alphabet) : PathFragment :=
+    e.map (fun x => x.state)
+
+  def ClocksFragment := List ClockMap
+  def Fragment.toClocks (e : @Fragment Alphabet) : ClocksFragment :=
+    e.map (fun x => x.clockMap)
+
+end Execution
