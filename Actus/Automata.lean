@@ -3,14 +3,69 @@ import Lean.Data.HashSet
 import Actus.Types.Automata
 import Actus.Types.Classes
 
--- important: we don't actually want a timed buchi because infinite horizon isn't so important.
-namespace TimedBuchi
+namespace TimedFinite
   variable (Alphabet : Type) [AtomicProp Alphabet]
 
-  structure GuardCondition where
-    clock : ClockVar
-    op : GuardOp
-    bound : Nat
+  structure Transition where
+    source : State
+    target : State
+    symbol : Alphabet
+    guard : GuardCondition
+    reset : List ClockVar
+    deriving BEq, Hashable
+
+  structure TFA where
+    states : Lean.HashSet State
+    alphabet : Lean.HashSet Alphabet
+    initialState : State
+    transitions : List (Transition Alphabet)
+    acceptingStates : Lean.HashSet State
+
+  def TFA.step (tfa : TFA Alphabet) (entry : @Execution.Entry Alphabet) : @Execution.Fragment Alphabet :=
+    tfa.transitions.filterMap fun transition =>
+      if transition.source == entry.state && transition.symbol == entry.symbol && transition.guard.eval entry.clockMap { tick := 0 } then
+        let newClockValues := transition.reset.foldl (fun acc cv => acc.insert cv 0) entry.clockMap
+        some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues }
+      else
+        none
+
+  def TFA.isValidFragment (tfa : TFA Alphabet) (exec : @Execution.Fragment Alphabet) : Bool :=
+    match exec with
+    | [] => true
+    | entry :: rest =>
+      let nextEntries := tfa.step _ entry;
+      let anyNextEntries := nextEntries.any
+        fun nextEntry => match rest.head? with
+            | none => false
+            | some entry => entry.symbol == nextEntry.symbol && entry.state == nextEntry.state
+      anyNextEntries && isValidFragment tfa rest
+
+  -- def TFA.acceptsUntimedNaive (tfa : TFA Alphabet) (exec : @Execution.Fragment Alphabet) : Bool :=
+  --   tfa.isValidFragment _ exec && (exec.getLast? |>.map (fun entry => tfa.acceptingStates.contains entry.state) |>.getD false)
+
+  def TFA.accepts (tfa : TFA Alphabet) (word : @Execution.TimedWord Alphabet) : Bool := Id.run do
+    let mut currentState := tfa.initialState
+    let mut clockValues : ClockMap := Lean.RBMap.empty
+    for timedLetter in word.letters do
+      let mut validTransition := false
+      for transition in tfa.transitions do
+        if transition.source == currentState ∧ transition.symbol == timedLetter.symbol then
+          let guardSatisfied := transition.guard.eval clockValues timedLetter.clock
+          if guardSatisfied then
+            validTransition := true
+            currentState := transition.target
+            for clockLabel in transition.reset do
+              clockValues := clockValues.insert clockLabel 0
+            break
+      if !validTransition then
+        return false
+    return tfa.acceptingStates.contains currentState
+end TimedFinite
+
+-- timed buchi only comes into play when we think about composing contracts, each of which are finite,
+-- into an infinite time-horizon stream of contracts representing the global financial system
+namespace TimedBuchi
+  variable (Alphabet : Type) [AtomicProp Alphabet]
 
   structure Transition where
     source : State
@@ -26,68 +81,39 @@ namespace TimedBuchi
     transitions : List (Transition Alphabet)
     acceptingStates : List State
 
-  def GuardCondition.eval (gc : GuardCondition) (clockValues : ClockMap) : Bool :=
-    match clockValues.find? gc.clock with
-    | none => false
-    | some clockValue =>
-      match gc.op with
-      | GuardOp.le => clockValue.le gc.bound
-      | GuardOp.lt => clockValue.lt gc.bound
-      | GuardOp.ge => clockValue.ge gc.bound
-      | GuardOp.gt => clockValue.gt gc.bound
-
-  def step (tba : TBA Alphabet) (entry : @Execution.Entry Alphabet) :
-    List (@Execution.Entry Alphabet) :=
+  def TBA.step (tba : TBA Alphabet) (entry : @Execution.Entry Alphabet) : List (@Execution.Entry Alphabet) :=
     tba.transitions.filterMap fun transition =>
-      if transition.source == entry.state && transition.symbol == entry.symbol && transition.guard.eval entry.clockMap then
+      if transition.source == entry.state && transition.symbol == entry.symbol && transition.guard.eval entry.clockMap { tick := 0 } then
         let newClockValues := transition.reset.foldl (fun acc cv => acc.insert cv 0) entry.clockMap
         some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues }
       else
         none
 
-  def isValidFragment (tba : TBA Alphabet) (exec : @Execution.Fragment Alphabet) : Bool :=
+  def TBA.isValidFragment (tba : TBA Alphabet) (exec : @Execution.Fragment Alphabet) : Bool :=
     match exec with
     | [] => true
     | entry :: rest =>
-      let nextEntries := step _ tba entry
-      nextEntries.any fun nextEntry => let rh := rest.head?;
-        rh.map (fun entry => entry.symbol == nextEntry.symbol && entry.state == nextEntry.state) |>.getD false &&
-       isValidFragment tba rest
+      let nextEntries := step _ tba entry;
+      let anyNextEntries := nextEntries.any
+        fun nextEntry => match rest.head? with
+            | none => false
+            | some entry => entry.symbol == nextEntry.symbol && entry.state == nextEntry.state
+      anyNextEntries && isValidFragment tba rest
 
-  def accepts (tba : TBA Alphabet) (exec : @Execution.Fragment Alphabet) : Bool :=
-    isValidFragment _ tba exec && (exec.getLast? |>.map (fun entry => tba.acceptingStates.contains entry.state) |>.getD false)
+  -- def acceptsUntimedNaive (tba : TBA Alphabet) (exec : @Execution.Fragment Alphabet) : Bool :=
+  --   isValidFragment _ tba exec && (exec.getLast? |>.map (fun entry => tba.acceptingStates.contains entry.state) |>.getD false)
 
--- def accepts (tba : TBA Alphabet) (word : List Alphabet) : Bool := Id.run do
---   let mut currentState := tba.initialState
---   let mut clockValues : ClockMap := Lean.RBMap.empty
---   for symbol in word do
---     let nextStates := step _ tba currentState symbol clockValues
---     match nextStates with
---     | [] => return false
---     | (newState, newClockValues) :: _ => do
---       currentState := newState
---       clockValues := newClockValues
---       for (clockLabel, clock) in clockValues.toList do
---         clockValues := clockValues.insert clockLabel (clock.incr 1)
---   return tba.acceptingStates.contains currentState
---
--- def isValidExecution (tba : TBA Alphabet) (exec : Execution Alphabet) : Bool :=
---   if exec.states.length != exec.symbols.length + 1 || exec.clocks.length != exec.symbols.length then
---     false
---   else
---     let stateTransitions := exec.states.zip (exec.states.drop 1)
---     let symbolClockPairs := exec.symbols.zip exec.clocks
---     stateTransitions.zip symbolClockPairs |>.all fun ((source, target), (symbol, clockValues)) =>
---       step _ tba source symbol clockValues |>.any fun (nextState, _) =>
---         nextState == target
---
--- def executionToTrace (exec : Execution Alphabet) : Trace Alphabet :=
---   exec.symbols
---
--- def acceptsExecution (tba : TBA Alphabet) (exec : Execution Alphabet) : Bool :=
---   isValidExecution _ tba exec && (exec.states.getLast?.map (fun lastState => tba.acceptingStates.contains lastState) |>.getD false)
---
--- def acceptsTrace (tba : TBA Alphabet) (trace : Trace Alphabet) : Bool :=
---   accepts _ tba trace
-
+  def TBA.acceptsUntimed (tba : TBA Alphabet) (word : List Alphabet) : Bool := Id.run do
+    let mut currentState := tba.initialState
+    let mut clockValues : ClockMap := Lean.RBMap.empty
+    for symbol in word do
+      let nextStates := step _ tba { state := currentState, symbol := symbol, clockMap := clockValues }
+      match nextStates with
+      | [] => return false
+      | entry :: _ => do
+        currentState := entry.state
+        clockValues := entry.clockMap
+        for (clockLabel, clock) in clockValues.toList do
+          clockValues := clockValues.insert clockLabel (clock.incr 1)
+    return tba.acceptingStates.contains currentState
 end TimedBuchi

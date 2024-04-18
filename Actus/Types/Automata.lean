@@ -10,28 +10,49 @@ structure ClockVar where
   name : Nat
   deriving BEq, Hashable, Repr, Ord, DecidableEq
 structure Clock where
-  t : Nat
+  tick : Nat
   deriving BEq, Hashable, Repr, Ord, DecidableEq
-def Clock.le (x : Clock) (y : Nat) : Bool := x.t <= y
-def Clock.lt (x : Clock) (y : Nat) : Bool := x.t < y
-def Clock.ge (x : Clock) (y : Nat) : Bool := x.t >= y
-def Clock.gt (x : Clock) (y : Nat) : Bool := x.t > y
-def Clock.incr (x : Clock) (y : Nat) : Clock := { t := x.t + y }
+instance : LE Clock where
+  le x y := x.tick ≤ y.tick
+instance : LT Clock where
+  lt x y := x.tick < y.tick
+theorem Clock.lt_trans {x y z : Clock} : x < y → y < z → x < z := Nat.lt_trans
+def Clock.le (x : Clock) (y : Nat) : Bool := x.tick <= y
+def Clock.lt (x : Clock) (y : Nat) : Bool := x.tick < y
+def Clock.ge (x : Clock) (y : Nat) : Bool := x.tick >= y
+def Clock.gt (x : Clock) (y : Nat) : Bool := x.tick > y
+def Clock.incr (x : Clock) (y : Nat) : Clock := { tick := x.tick + y }
 instance : OfNat Clock 0 where
-  ofNat := { t := 0 }
+  ofNat := { tick := 0 }
 
 -- a limitation: alphabet is singleton rather than `Lean.HashSet`
 
 def ClockMap := Lean.RBMap ClockVar Clock (fun _ _ => Ordering.lt)
 
 inductive GuardOp : Type :=
-| le
-| lt
-| ge
-| gt
+  | le
+  | lt
+  | ge
+  | gt
+  deriving BEq, Hashable, Repr
+
+structure GuardCondition where
+  clock : ClockVar
+  op : GuardOp
+  bound : Nat
+  deriving BEq, Hashable, Repr
+
+def GuardCondition.eval (gc : GuardCondition) (clockValues : ClockMap) (incrClock : Clock) : Bool :=
+  match clockValues.find? gc.clock with
+  | none => false
+  | some clockValue => let cv := clockValue.incr incrClock.tick;
+    match gc.op with
+    | GuardOp.le => cv.le gc.bound
+    | GuardOp.lt => cv.lt gc.bound
+    | GuardOp.ge => cv.ge gc.bound
+    | GuardOp.gt => cv.gt gc.bound
 
 namespace Execution
-  -- TODO: change to `structure ExecutionEntry` and `def Execution := List ExecutionEntry`
   structure Entry where
     state : State
     symbol : Alphabet
@@ -51,4 +72,18 @@ namespace Execution
   def Fragment.toClocks (e : @Fragment Alphabet) : ClocksFragment :=
     e.map (fun x => x.clockMap)
 
+  structure TimedLetter where
+    symbol : Alphabet
+    clock : Clock
+    deriving BEq, Hashable, Repr
+  instance : LE (@TimedLetter Alphabet) where
+    le x y := x.clock ≤ y.clock
+  instance : LT (@TimedLetter Alphabet) where
+    lt x y := x.clock < y.clock
+
+  structure TimedWord where
+    letters : List (@TimedLetter Alphabet)
+    nonDecreasing : ∀ (i j : Nat) (H0 : j < letters.length) (H1 : i < j),
+      let H2 : i < letters.length := Clock.lt_trans H1 H0;
+      letters[i]'H2 ≤ letters[j]'H0
 end Execution
