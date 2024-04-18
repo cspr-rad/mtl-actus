@@ -1,9 +1,4 @@
-import Actus.Trace
 import Actus.Contracts
-open Time
-
-def PAMTrace := Trace PAM.Event
-def SWPPVTrace := Trace SWPPV.Event
 
 -- Fixed leg payment version
 def pam_swppv_event_map (e : PAM.Event) : SWPPV.Event :=

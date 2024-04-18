@@ -1,6 +1,7 @@
-import Actus.Types
+import Actus.Types.Numbers
+import Actus.Types.Time
 import Actus.Logic
-open Time MetricTemporal
+open MetricTemporal
 
 /-! # ACTUS Contracts -/
 /- A contract module is of signaturea -/

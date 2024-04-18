@@ -1,6 +1,6 @@
 import Lean.Data.HashSet
-import Actus.Types
-open Time
+import Actus.Types.Classes
+import Actus.Types.Time
 /-!
 Our MTL admits discrete time intervals.
 -/
@@ -112,7 +112,7 @@ namespace MetricTemporal
 end MetricTemporal
 
 namespace MetricTemporalSemantics
-  open MetricTemporal Time
+  open MetricTemporal
   variable {T : Type} [AtomicProp T]
 
   def Model (T : Type) : Type := Timestamp -> Option T
@@ -141,7 +141,7 @@ namespace MetricTemporalSemantics
 end MetricTemporalSemantics
 
 namespace MetricTemporalSoundness
-  open MetricTemporal Time
+  open MetricTemporal
   variable {E : Type} [AtomicProp T]
 
   inductive Provable (t : Timestamp) : Proposition E -> Prop :=

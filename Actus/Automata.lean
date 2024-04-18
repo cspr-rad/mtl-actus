@@ -1,36 +1,10 @@
 import Lean.Data.RBMap
 import Lean.Data.HashSet
-import Actus.Types
+import Actus.Types.Automata
+import Actus.Types.Classes
 
 namespace TimedBuchi
   variable (Alphabet : Type) [AtomicProp Alphabet]
-
-  structure State where
-    idx : Nat
-    deriving BEq, Hashable, Repr
-  structure ClockVar where
-    name : Nat
-    deriving BEq, Hashable, Repr, Ord, DecidableEq
-  structure Clock where
-    t : Nat
-    deriving BEq, Hashable, Repr, Ord, DecidableEq
-  def Clock.le (x : Clock) (y : Nat) : Bool := x.t <= y
-  def Clock.lt (x : Clock) (y : Nat) : Bool := x.t < y
-  def Clock.ge (x : Clock) (y : Nat) : Bool := x.t >= y
-  def Clock.gt (x : Clock) (y : Nat) : Bool := x.t > y
-  def Clock.incr (x : Clock) (y : Nat) : Clock := { t := x.t + y }
-  instance : OfNat Clock 0 where
-    ofNat := { t := 0 }
-
-  -- a limitation: alphabet is singleton rather than `Lean.HashSet`
-
-  def ClockMap := Lean.RBMap ClockVar Clock (fun _ _ => Ordering.lt)
-
-  inductive GuardOp : Type :=
-  | le
-  | lt
-  | ge
-  | gt
 
   structure GuardCondition where
     clock : ClockVar
@@ -83,5 +57,24 @@ namespace TimedBuchi
         for (clockLabel, clock) in clockValues.toList do
           clockValues := clockValues.insert clockLabel (clock.incr 1)
     return tba.acceptingStates.contains currentState
+
+  def isValidExecution (tba : TBA Alphabet) (exec : Execution Alphabet) : Bool :=
+    if exec.states.length != exec.symbols.length + 1 || exec.clocks.length != exec.symbols.length then
+      false
+    else
+      let stateTransitions := exec.states.zip (exec.states.drop 1)
+      let symbolClockPairs := exec.symbols.zip exec.clocks
+      stateTransitions.zip symbolClockPairs |>.all fun ((source, target), (symbol, clockValues)) =>
+        step _ tba source symbol clockValues |>.any fun (nextState, _) =>
+          nextState == target
+
+  def executionToTrace (exec : Execution Alphabet) : Trace Alphabet :=
+    exec.symbols
+
+  def acceptsExecution (tba : TBA Alphabet) (exec : Execution Alphabet) : Bool :=
+    isValidExecution _ tba exec && (exec.states.getLast?.map (fun lastState => tba.acceptingStates.contains lastState) |>.getD false)
+
+  def acceptsTrace (tba : TBA Alphabet) (trace : Trace Alphabet) : Bool :=
+    accepts _ tba trace
 
 end TimedBuchi
