@@ -1,7 +1,9 @@
+import Actus.Types.Classes
 import Actus.Types.Numbers
 import Actus.Types.Time
 import Actus.Logic
-open MetricTemporal
+import Actus.Automata
+open MetricTemporal TimedFinite
 
 /-! # ACTUS Contracts -/
 /- A contract module is of signaturea -/
@@ -21,6 +23,8 @@ namespace PAM
   | InterestPayment : Event
     deriving BEq, Hashable, Repr, DecidableEq
 
+  instance : AtomicProp Event := by constructor
+
   def Contract := Proposition Event deriving BEq, Hashable, Repr
 
   def contract_length (terms : Terms) : Window := (terms.start_date, terms.start_date.add_delta terms.maturity)
@@ -33,6 +37,53 @@ namespace PAM
 
   def contract (terms : Terms) : Contract := ip_continuous_till_mat terms
 
+  def automaton (terms : Terms) : TFA Event := Id.run do
+    let cl := contract_length terms
+    let start := State.mk 0
+    let interestPaid := State.mk 1
+    let matured := State.mk 2
+    let states := Lean.HashSet.empty
+    let alphabet := Lean.HashSet.empty
+    let acceptingStates := Lean.HashSet.empty
+
+    let tfa : TFA Event := {
+      states := states.insertMany [start, interestPaid, matured],
+      alphabet := alphabet.insertMany [Event.InterestPayment, Event.PrincipalRepayment, Event.Maturity],
+      initialState := start,
+      transitions := [
+        {
+          source := start,
+          target := interestPaid,
+          symbol := Event.InterestPayment,
+          guard := { clock := ClockVar.mk 0, op := GuardOp.le, bound := terms.maturity.dt.toNat },
+          reset := []
+        },
+        {
+          source := interestPaid,
+          target := interestPaid,
+          symbol := Event.InterestPayment,
+          guard := { clock := ClockVar.mk 0, op := GuardOp.le, bound := terms.maturity.dt.toNat },
+          reset := [ClockVar.mk 0]
+        },
+        {
+          source := interestPaid,
+          target := interestPaid,
+          symbol := Event.PrincipalRepayment,
+          guard := { clock := ClockVar.mk 0, op := GuardOp.le, bound := terms.maturity.dt.toNat },
+          reset := [ClockVar.mk 0]
+        },
+        {
+          source := interestPaid,
+          target := matured,
+          symbol := Event.Maturity,
+          guard := { clock := ClockVar.mk 0, op := GuardOp.ge, bound := terms.maturity.dt.toNat },
+          reset := []
+        }
+      ],
+      acceptingStates := acceptingStates.insert matured
+    }
+
+    return tfa
 end PAM
 
 namespace SWPPV

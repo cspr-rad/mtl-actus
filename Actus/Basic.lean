@@ -1,4 +1,5 @@
 import Actus.Contracts
+import Actus.Automata
 
 -- Fixed leg payment version
 def pam_swppv_event_map (e : PAM.Event) : SWPPV.Event :=
@@ -37,14 +38,6 @@ namespace UnitTest
   }
 
   -- #eval transform_swppv_contract <| SWPPV.contract <| someSwppv
-  -- TODO
-  -- #eval contract someTerms
 end UnitTest
-
--- TODO: https://chat.openai.com/c/f756902c-9ce3-4c76-b1bc-9ef47716103c pick up here with:
--- - composing pam with swap
--- - "trace" executions and their validation
-
--- TODO: we could write a normalizer?
 
 def hello := "world"
