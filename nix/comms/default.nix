@@ -4,10 +4,11 @@
     { config, pkgs, ... }:
     {
       packages = {
-        dc-talk = import ./may-2024-actus-dc {
-          inherit (inputs) self;
-          inherit pkgs;
-        };
+        # This needs to be built outside of nix builder with a shell, cuz of imports
+        # dc-talk = import ./may-2024-actus-dc {
+        #   inherit (inputs) self;
+        #   inherit pkgs;
+        # };
         whitepaper = import ./whitepaper {
           inherit (inputs) self;
           inherit pkgs;

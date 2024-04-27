@@ -21,6 +21,7 @@
               name = "mtlactus-typesetting";
               shellHook = "echo ${greeting}";
               buildInputs = [
+                pdfpc
                 typst
                 typstfmt
                 typst-lsp
