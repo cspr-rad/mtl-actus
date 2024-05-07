@@ -32,22 +32,27 @@
 #slide(
   title: [Algorithmic Contract Types Unified Standard], new-section: [ACTUS],
 )[ \
-    ACTUS simulates _cash flows_ with a _state machine_ abstraction. \
+  ACTUS simulates _cash flows_ with a _state machine_ abstraction. \
     #figure(image("cash_flows.png", width: 65%))
 ]
 
-#slide(title: [ACTUS state machine])[
-    Each contract comes equipped with
-    - $T : S times E -> S$
-    - $P : E -> RR$
+#slide(
+  title: [ACTUS state machine],
+)[
+  Each contract comes equipped with
+  - $T : S times E -> S$
+  - $P : E -> RR$
 
-    where
-    $T$ := Transition;
-    $P$ := Payoff;
-    $S$ := State;
-    $E$ := Event
+  where
+  $T$ := Transition;
+  $P$ := Payoff;
+  $S$ := State;
+  $E$ := Event
 
-    #only(2)[When you evaluate a state at an event $e$, a counterparty receives $P(e)$ payout (may be negative)]
+  #only(
+    2,
+  )[When you evaluate a state at an event $e$, a counterparty receives $P(e)$ payout
+    (may be negative)]
 ]
 
 #slide(
@@ -119,12 +124,35 @@ Procedurally generate unit tests (100-10000 cases)
 )[
   We can make logical formulae specify properties involving time by introducing
   new operators called _modal operators_
-  - $square.stroked p$ := always $p$
-  - $diamond.stroked p$ := eventually $p$
-  - $p U q$ := $p$ until $q$
+    - $square.stroked p$ := always $p$ ($p$ holds regardless of timestep)
+    - $diamond.stroked p$ := eventually $p$ (there exists some timestamp later when $p$ holds)
+    - $p #"U" q$ := $p$ until $q$ ($p$ holds continuously until $q$ holds)
+]
+
+#slide(
+    title: [Traffic light]
+)[
+  #figure(image("traffic_light.jpeg", width: 30%))
+  === A traffic light should eventually turn green in all directions
+  #uncover(2)[$square.stroked diamond.stroked N and square.stroked diamond.stroked S and square.stroked diamond.stroked E and square.stroked diamond.stroked W$]
+  === A traffic light should never be green in all directions
+  #uncover(2)[$square.stroked (N and S -> not (E or W)) $]
+]
+
+#slide(
+    title: [Temporal logic]
+)[
+    == Capture what you care about
+    - Temporal logic *specifies properties* of computation over time.
+    == Verify
+    - A *state machine* can be drawn from some implementation and *checked* that it matches a temporal logic *spec*.
 ]
 
 #slide(title: [Automata], new-section: [Automata])[
+#figure(image("vending_machine.jpg", width: 30%))
+]
+
+#slide(title: [Automata])[
 #let vending_machine = ```
  digraph VendingMachine {
   rankdir=LR;
@@ -143,12 +171,7 @@ Procedurally generate unit tests (100-10000 cases)
   Dispensing -> Idle [label = "ProductDispensed"];
 }
 ```
-        #figure(
-  image("vending_machine.jpg", width: 30%),
-)
-    #renderthreequarters(vending_machine)
-
-
+#renderthreequarters(vending_machine)
 ]
 
 #slide(
@@ -273,13 +296,21 @@ We can _run_ PAM as a timed finite automaton to elicit a _trace_
 #only(5)[So the run produces trace: [`INIT`, `IP`, `IP`, #text(blue)[`PR`]]]
 ]
 
+#slide(title: [Formal verification for reactive systems], new-section: [Model Checking])[
+#figure(image("reactive_systems.png", width: 77%))
+]
+
 #slide(
-  title: [Reactive systems], new-section: [Model checking],
+  title: [Reactive systems],
 )[
   - A *reactive system* is a software system embedded in an environment that
     responds to sensor input
     - often in continuous/infinite time horizon
     - often with actuator output effecting the environment
+  #uncover(2)[
+  - Examples: traffic lights, airplane autopilot, fitness tracker on smartwatch, cruise control on a car
+  ]
+    #figure(image("reactive_systems.png", width: 35%))
 ]
 
 #slide(
@@ -311,18 +342,32 @@ We can _run_ PAM as a timed finite automaton to elicit a _trace_
   _something good eventually happens_
 ]
 
-#slide(
-  title: [notes (not actually gonna be a slide)], new-section: [TODO: delete],
-)[
-  - it'd be good to have a section on the different usecases of formal verification,
-    like modeling vs verification of prod code
-  - unpack what model checking is
+#slide(title: [Liveness property for PAM])[
+    == Eventually maturity
+    $diamond.stroked #"Mat"$
 ]
 
-#matrix-slide(columns: 1)[
-  top
-][
-  bottom
+#slide(title: [Safety property for PAM])[
+    == Maturity doesn't come before at least one interest payment
+    $not #"Mat" #"U" #"IP"$
 ]
 
-#matrix-slide(columns: (1fr, 2fr, 1fr), ..(lorem(8),) * 9)
+#slide(title: [Contract specification for PAM])[
+    == Interest payments go continuously until maturity
+    $square.stroked (#"IP" -> (circle.stroked (#"IP" or #"PR")) #"U" #"Mat")$
+]
+
+#slide(title: [PAM as a temporal logic spec])[
+  $diamond.stroked #"Mat" and not #"Mat" #"U" #"IP" and square.stroked (#"IP" -> (circle.stroked (#"IP" or #"PR")) #"U" #"Mat")$
+]
+
+#slide(title: [Conclusion], new-section: [Conclusion])[
+- ACTUS represents financial interactions as a state machine
+- Logic, especially temporal logic, can specify behavioral correctness properties of state machines
+- Formal verification leverages this as a quality assurance process
+- Model checking is a rich literature, underappreciated in finance
+]
+
+#title-slide(
+    title: [Thanks], authors: [Quinn Dougherty], institution-name: "Casper Association", date: today, logo: image("./cspr-favicon.png"),
+)
