@@ -1,4 +1,5 @@
 import Lean.Data.RBMap
+import Actus.Types.Numbers
 import Actus.Types.Classes
 
 variable {Alphabet : Type} [AtomicProp Alphabet]
@@ -57,6 +58,7 @@ namespace Execution
     state : State
     symbol : Alphabet
     clockMap : ClockMap
+    cashFlow : Option Money
 
   def Fragment := List (@Entry Alphabet)
 
@@ -81,9 +83,11 @@ namespace Execution
   instance : LT (@TimedLetter Alphabet) where
     lt x y := x.clock < y.clock
 
-  structure TimedWord where
-    letters : List (@TimedLetter Alphabet)
-    nonDecreasing : ∀ (i j : Nat) (H0 : j < letters.length) (H1 : i < j),
+  def isNonDecreasing (letters: List (@TimedLetter Alphabet)) := ∀ (i j : Nat) (H0 : j < letters.length) (H1 : i < j),
       let H2 : i < letters.length := Clock.lt_trans H1 H0;
       letters[i]'H2 ≤ letters[j]'H0
+
+  structure TimedWord where
+    letters : List (@TimedLetter Alphabet)
+    nonDecreasing : isNonDecreasing letters
 end Execution
