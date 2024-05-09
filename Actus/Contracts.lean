@@ -29,13 +29,21 @@ namespace PAM
 
   def contract_length (terms : Terms) : Window := (terms.start_date, terms.start_date.add_delta terms.maturity)
 
+  def liveness (terms : Terms) : Contract :=
+    let cl := contract_length terms;
+    {◇ cl} [[Event.PrincipalRepayment]] and {◇ cl} [[Event.InterestPayment]] and {◇ cl} [[Event.Maturity]]
+
+  def safety (terms : Terms) : Contract :=
+    let cl := contract_length terms;
+    (~ [[Event.Maturity]]) U [[Event.InterestPayment]] in cl
+
   def ip_continuous_till_mat (terms : Terms) : Contract :=
     let cl := contract_length terms;
     {□ cl} ([[Event.InterestPayment]] implies
         ({◯ cl.incr_start {dt := 1}} ([[Event.InterestPayment]] or [[Event.PrincipalRepayment]])))
       U [[Event.Maturity]] in cl
 
-  def contract (terms : Terms) : Contract := ip_continuous_till_mat terms
+  def contract (terms : Terms) : Contract := ip_continuous_till_mat terms and safety terms and liveness terms
 
   def automaton (terms : Terms) : TFA Event := Id.run do
     let cl := contract_length terms
