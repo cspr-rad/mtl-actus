@@ -1,4 +1,5 @@
 import Lean.Data.RBMap
+import Actus.Types.Numbers
 import Actus.Types.Classes
 
 variable {Alphabet : Type} [AtomicProp Alphabet]
@@ -12,7 +13,7 @@ structure ClockVar where
 structure Clock where
   tick : Nat
   deriving BEq, Hashable, Repr, Ord, DecidableEq
-instance : LE Clock where
+instance ClockLE : LE Clock where
   le x y := x.tick ≤ y.tick
 instance : LT Clock where
   lt x y := x.tick < y.tick
@@ -57,6 +58,7 @@ namespace Execution
     state : State
     symbol : Alphabet
     clockMap : ClockMap
+    cashFlow : Option Money
 
   def Fragment := List (@Entry Alphabet)
 
@@ -76,14 +78,16 @@ namespace Execution
     symbol : Alphabet
     clock : Clock
     deriving BEq, Hashable, Repr
-  instance : LE (@TimedLetter Alphabet) where
+  instance TimedLetterLE : LE (@TimedLetter Alphabet) where
     le x y := x.clock ≤ y.clock
   instance : LT (@TimedLetter Alphabet) where
     lt x y := x.clock < y.clock
 
-  structure TimedWord where
-    letters : List (@TimedLetter Alphabet)
-    nonDecreasing : ∀ (i j : Nat) (H0 : j < letters.length) (H1 : i < j),
+  def isNonDecreasing (letters: List (@TimedLetter Alphabet)) := ∀ (i j : Nat) (H0 : j < letters.length) (H1 : i < j),
       let H2 : i < letters.length := Clock.lt_trans H1 H0;
       letters[i]'H2 ≤ letters[j]'H0
+
+  structure TimedWord where
+    letters : List (@TimedLetter Alphabet)
+    nonDecreasing : isNonDecreasing letters
 end Execution

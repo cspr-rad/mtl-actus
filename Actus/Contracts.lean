@@ -5,6 +5,13 @@ import Actus.Logic
 import Actus.Automata
 open MetricTemporal TimedFinite
 
+structure ActusContract where
+  terms : Type
+  event : Type
+  event_atomicprop : AtomicProp event
+  contract : terms -> Proposition event
+  automaton : terms -> TFA event
+
 /-! # ACTUS Contracts -/
 /- A contract module is of signaturea -/
 /- * (Terms Event : Type) -/
@@ -23,7 +30,7 @@ namespace PAM
   | InterestPayment : Event
     deriving BEq, Hashable, Repr, DecidableEq
 
-  instance : AtomicProp Event := by constructor
+  instance event_atomicprop : AtomicProp Event := by constructor
 
   def Contract := Proposition Event deriving BEq, Hashable, Repr
 
@@ -93,6 +100,8 @@ namespace PAM
 
     return tfa
 end PAM
+
+def PAMContract : ActusContract := { terms := PAM.Terms, event := PAM.Event, event_atomicprop := PAM.event_atomicprop, contract := PAM.contract, automaton := PAM.automaton }
 
 namespace SWPPV
 

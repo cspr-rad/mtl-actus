@@ -1,6 +1,7 @@
 import Lean.Data.RBMap
 import Lean.Data.HashSet
 import Actus.Types.Automata
+import Actus.Types.Numbers
 import Actus.Types.Classes
 
 namespace TimedFinite
@@ -25,7 +26,15 @@ namespace TimedFinite
     tfa.transitions.filterMap fun transition =>
       if transition.source == entry.state && transition.symbol == entry.symbol && transition.guard.eval entry.clockMap { tick := 0 } then
         let newClockValues := transition.reset.foldl (fun acc cv => acc.insert cv 0) entry.clockMap
-        some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues }
+        some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues, cashFlow := none}
+      else
+        none
+
+  def TFA.stepWithCashFlow (tfa : TFA Alphabet) (entry : @Execution.Entry Alphabet) (cashFlow : Alphabet -> Money) : @Execution.Fragment Alphabet :=
+    tfa.transitions.filterMap fun transition =>
+      if transition.source == entry.state && transition.symbol == entry.symbol && transition.guard.eval entry.clockMap { tick := 0 } then
+        let newClockValues := transition.reset.foldl (fun acc cv => acc.insert cv 0) entry.clockMap
+        some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues, cashFlow := cashFlow entry.symbol }
       else
         none
 
@@ -85,7 +94,7 @@ namespace TimedBuchi
     tba.transitions.filterMap fun transition =>
       if transition.source == entry.state && transition.symbol == entry.symbol && transition.guard.eval entry.clockMap { tick := 0 } then
         let newClockValues := transition.reset.foldl (fun acc cv => acc.insert cv 0) entry.clockMap
-        some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues }
+        some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues, cashFlow := none}
       else
         none
 
@@ -107,7 +116,7 @@ namespace TimedBuchi
     let mut currentState := tba.initialState
     let mut clockValues : ClockMap := Lean.RBMap.empty
     for symbol in word do
-      let nextStates := step _ tba { state := currentState, symbol := symbol, clockMap := clockValues }
+      let nextStates := step _ tba { state := currentState, symbol := symbol, clockMap := clockValues, cashFlow := none }
       match nextStates with
       | [] => return false
       | entry :: _ => do
