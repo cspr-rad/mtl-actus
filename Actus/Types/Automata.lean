@@ -13,7 +13,7 @@ structure ClockVar where
 structure Clock where
   tick : Nat
   deriving BEq, Hashable, Repr, Ord, DecidableEq
-instance : LE Clock where
+instance ClockLE : LE Clock where
   le x y := x.tick ≤ y.tick
 instance : LT Clock where
   lt x y := x.tick < y.tick
@@ -78,7 +78,7 @@ namespace Execution
     symbol : Alphabet
     clock : Clock
     deriving BEq, Hashable, Repr
-  instance : LE (@TimedLetter Alphabet) where
+  instance TimedLetterLE : LE (@TimedLetter Alphabet) where
     le x y := x.clock ≤ y.clock
   instance : LT (@TimedLetter Alphabet) where
     lt x y := x.clock < y.clock

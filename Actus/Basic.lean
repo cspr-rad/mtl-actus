@@ -1,3 +1,4 @@
+-- import Batteries.Data.List.Basic
 import Actus.Contracts
 import Actus.Automata
 
@@ -36,8 +37,47 @@ namespace UnitTest
     rate_dt := { dt := 1 },
     payment_dt := { dt := 1 },
   }
+  instance PAMInhabited : Inhabited (@Execution.TimedLetter PAM.Event) where
+    default := { symbol := PAM.Event.InterestPayment, clock := Clock.mk 0 }
 
+  def somePamWord : @Execution.TimedWord PAM.Event :=
+    let ip1 := { symbol := PAM.Event.InterestPayment, clock := Clock.mk 0 };
+    let ip2 := { symbol := PAM.Event.InterestPayment, clock := Clock.mk 1 };
+    let pr := { symbol := PAM.Event.PrincipalRepayment, clock := Clock.mk 2 };
+    let m := { symbol := PAM.Event.Maturity, clock := Clock.mk 10 };
+    let letters := [ip1, ip2, pr, m];
+    let nonDecreasing : Execution.isNonDecreasing letters := by
+      intros i j H0 H1;
+      have H2 : i < letters.length := Nat.lt_trans H1 H0;
+      have H3 : letters[i] ≤ letters[j] := by
+        match i, j with
+        | 0, 0 | 1,0 | 1,1 | 2,0 | 2,1 | 2,2 | 3,0 | 3,1 | 3,2 | 3,3 => contradiction
+        | 0, 1 =>
+          show ip1 <= ip2
+          simp [Execution.TimedLetterLE, ClockLE]
+        | 0, 2 =>
+          show ip1 <= pr
+          simp [Execution.TimedLetterLE, ClockLE]
+        | 0, 3 =>
+          show ip1 <= m
+          simp [Execution.TimedLetterLE, ClockLE]
+        | 1, 2 =>
+          show ip2 <= pr
+          simp [Execution.TimedLetterLE, ClockLE]
+        | 1, 3 =>
+          show ip2 <= m
+          simp [Execution.TimedLetterLE, ClockLE]
+        | 2, 3 =>
+          show pr <= m
+          simp [Execution.TimedLetterLE, ClockLE]
+        | i' + 4, _ => simp [letters] at H0; omega
+        | _, j' + 4 => simp [letters] at H0; omega
+      exact H3;
+    Execution.TimedWord.mk letters nonDecreasing
+
+  #eval (PAM.automaton somePam).accepts _ somePamWord
   -- #eval transform_swppv_contract <| SWPPV.contract <| someSwppv
+  -- #eval PAM.automaton.accepts
 end UnitTest
 
 def hello := "world"
