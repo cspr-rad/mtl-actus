@@ -6,22 +6,39 @@
 #+BIBLIOGRAPHY: ./b.bib
 
 #+BEGIN_abstract
-colorem coipsum
+A financial contract is an interaction between people involving money.
+
+lorem ipsum
+
+The code is available at the https url https://github.com/cspr-rad/mtl-actus
 #+END_abstract
 
 * Introduction
-lorem ipsum
-* Contributions
-
+colorem coipsum
+** Contributions
+The current paper shows in principle how to model finance as a reactive system for the purposes of formal verification.
 * Prior Work
 
 ** Algorithmic Contract Types Unified Standard
-State machine notions introduced by [cite:@Brammertz2019SmartCD]
+In [cite:@Brammertz2019SmartCD], the ACTUS (Algorithmic Contract Types Unified Standards) introduces a formalized approach to representing financial contracts using concepts from state machine theory. Developed by the ACTUS Financial Research Foundation, this framework models financial instruments as algorithmic contracts with well-defined states, events, and transition functions.
 
-** Algebraic and Inductively defined financial interaction
+A key contribution of ACTUS is its event-based architecture for financial modeling. Each contract type is defined by a set of state variables and a series of event types. These events trigger state transitions and cash flows according to precisely specified functions. This approach allows for a dynamic representation of financial contracts over their lifecycle, enabling accurate projection of future states and cash flows.
+
+ACTUS formalizes the temporal aspects of financial contracts through standardized scheduling functions and date adjustment conventions. This allows for precise modeling of complex temporal patterns in financial agreements, such as irregular payment schedules or conditional events.
+
+By applying state machine concepts to finance, ACTUS provides a rigorous mathematical foundation for representing and analyzing financial contracts. This standardization facilitates more precise financial modeling, risk assessment, and regulatory analysis across a wide range of financial instruments.
+
+** Algebraic and Inductively Defined Financial Interaction
 [cite:@Jones2000ComposingCA] defined an algebra for contracts of two parties. In [cite:@Bahr2015CertifiedSM] a contract for more than two parties can be well-typed.
 
+The seminal work on formalizing financial contracts using functional programming techniques was done by [cite:@Jones2000ComposingCA]. They introduced a combinator library for describing contracts declaratively, along with a compositional denotational semantics for valuing contracts. Their approach allowed complex contracts to be built up from simpler components in a modular way. Importantly, they separated the abstract specification of contracts from the concrete implementation details of valuation. This allowed different valuation models and numerical methods to be used without changing the contract descriptions.
+
+Building on this foundation, [cite:@Bahr2015CertifiedSM] developed a certified symbolic management system for multi-party financial contracts. They extended the contract language to handle multiple parties and added a formal cash-flow semantics. Crucially, they implemented the contract language and management functionality in the Coq proof assistant, allowing them to formally verify properties like causality and provide certified contract analyses and transformations. Their approach demonstrates how techniques from programming language theory and formal verification can be applied to increase trust and reliability in financial contract management software. The use of symbolic techniques, rather than purely numeric ones, opens up new possibilities for contract analysis.
+
 ** Contract based design
+/I don't remember which work I wanted to discuss here, when I jotted down this heading/.
+
+* Future work
 
 * Bibliography
 #+PRINT_BIBLIOGRAPHY:
