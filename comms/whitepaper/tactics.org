@@ -1,0 +1,58 @@
+#+title: Tactics
+
+* Notes Jun26 call w matt, avi, mark
+** Timeline:
+End of Q3
+** Reviewers
+*** authors:
+- Quinn: first
+- Avi: "what's wrong with actus" section
+- Mark: leadership/oversight
+- Matt?:
+*** alpha (internal)
+- Una: Does a copy-editing pass mean authorship?
+- Chen: same as Una
+- Ed?
+*** beta (external)
+- Zacharya
+- Mo
+- Morgan
+- kind2 guys
+** Who is the audience?
+*** If we prioritize the FV audience:
+- "they sit down for two hours to read this and take away exciting ideas with their own thoughts"
+*** ideally: we'd have like two audiences: econ and FV.
+- walk through PAM and the vision for verifiable contracts as ELI5
+- walk through automata, model checking ELI5
+*** Impact story:
+1. recruit talent in FV to work on financial verification on a public goods basis
+  - motivates proof engineers and so on to contribute to verification frameworks /for product endpoints/ along the lines of the ACTUS Foundation's mandate
+  - More succinctly: bringing FV people to the ACTUS table.
+2. inspire financial leadership (including ACTUS leadership but not limited to) to support FV work.
+3. R&D teams at commercial banks get inspired and ape our shit
+4. Web3 audience builds web3 products with ACTUS
+
+*Takeaway*: we are going to focus on *1* and *3*.
+** Venue (or at least targeted to be to the standards of):
+1. It's good to target a standard of quality, format, structure
+  - some discovery to think of what venues have formats and structures that are appropriate
+2. alt: the other reference class totally different is web3 whitepapers.
+  - I don't think we like this vibe
+  - This audience is secondary
+** 1: Paper structure
+*** Introduction
+**** problem statement
+**** contributions
+Avi's take: start formalizing a basis for something that looks like ACTUS.
+Matt's take:
+- applying model checking to a fairly new domain (finance)
+- contributes to the discourse of whether or not ACTUS is a formally verifiable spec
+  - *by revealing* that ACTUS isn't formally verifiable
+*** prior work
+*** (body) problem statement (Avi)
+- money
+*** (body)
+*** future work
+*** conclusion
+* Notes Jul2 call
+* Notes Jul9 call

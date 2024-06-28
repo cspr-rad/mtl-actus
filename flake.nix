@@ -7,6 +7,7 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    effects.url = "github:hercules-ci/hercules-ci-effects";
   };
   outputs =
     inputs@{
@@ -14,20 +15,42 @@
       nixpkgs,
       parts,
       fmt,
+      effects,
     }:
-    parts.lib.mkFlake { inherit inputs; } {
-      systems = [
-        "x86_64-linux"
-        "aarch64-darwin"
-        "x86_64-darwin"
-      ];
-      imports = [
-        ./nix/actus
-        ./nix/shells.nix
-        ./nix/comms
-        fmt.flakeModule
-        ./nix/format.nix
-      ];
-      flake.herculesCI.ciSystems = [ "x86_64-linux" ];
-    };
+    let
+      mainSystem = "x86_64-linux";
+    in
+    parts.lib.mkFlake { inherit inputs; } (
+      { withSystem, ... }:
+      {
+        systems = [
+          mainSystem
+          "aarch64-darwin"
+          "x86_64-darwin"
+        ];
+        imports = [
+          effects.flakeModule
+          ./nix/actus
+          ./nix/shells.nix
+          ./nix/comms
+          fmt.flakeModule
+          ./nix/format.nix
+        ];
+        flake = {
+          herculesCI.ciSystems = [ mainSystem ];
+          effects.whitepaper =
+            let
+              whitepaper = self.packages.${mainSystem}.whitepaper;
+            in
+            import ./nix/comms/effect.nix {
+              inherit
+                mainSystem
+                inputs
+                withSystem
+                whitepaper
+                ;
+            };
+        };
+      }
+    );
 }
