@@ -8,10 +8,10 @@ in
   herculesCI =
     { config, ... }:
     withSystem ciSystem (
-      { hci-effects, pkgs', ... }:
+      { hci-effects, pkgs, ... }:
       let
         run-condition = config.repo.branch == "master";
-        comms-effect = import ./comms/effect.nix { inherit whitepaper; pkgs = pkgs'; };
+        comms-effect = import ./comms/effect.nix { inherit whitepaper pkgs; };
       in
       {
         ciSystems = [ "x86_64-linux" ];
