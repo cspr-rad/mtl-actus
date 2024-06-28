@@ -35,22 +35,8 @@
           ./nix/comms
           fmt.flakeModule
           ./nix/format.nix
+          ./nix/herc.nix
         ];
-        flake = {
-          herculesCI.ciSystems = [ mainSystem ];
-          effects.whitepaper =
-            let
-              whitepaper = self.packages.${mainSystem}.whitepaper;
-            in
-            import ./nix/comms/effect.nix {
-              inherit
-                mainSystem
-                inputs
-                withSystem
-                whitepaper
-                ;
-            };
-        };
       }
     );
 }
