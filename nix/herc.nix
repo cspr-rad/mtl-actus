@@ -3,15 +3,15 @@ let
   ciSystem = "x86_64-linux";
   packages = inputs.self.packages.${ciSystem};
   whitepaper = packages.whitepaper;
-  comms-effect = import ./comms/effect.nix { inherit whitepaper; };
 in
 {
   herculesCI =
     { config, ... }:
     withSystem ciSystem (
-      { hci-effects, ... }:
+      { hci-effects, pkgs, ... }:
       let
         run-condition = config.repo.branch == "master";
+        comms-effect = import ./comms/effect.nix { inherit whitepaper pkgs; };
       in
       {
         ciSystems = [ "x86_64-linux" ];
