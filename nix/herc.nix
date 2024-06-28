@@ -16,6 +16,7 @@ in
       {
         ciSystems = [ "x86_64-linux" ];
         onPush = {
+          default.enable = false;
           comms =
             if run-condition then
               { outputs.effects = comms-effect; }
