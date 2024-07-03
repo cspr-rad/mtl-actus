@@ -7,7 +7,7 @@ pkgs.stdenv.mkDerivation {
   ];
   src = "${self}/comms/whitepaper";
   buildPhase = ''
-    pandoc -t latex -f org --citeproc $src/source.org -o whitepaper.pdf
+    pandoc -t latex -f org --citeproc --csl $src/acm.csl --number-sections $src/source.org -o whitepaper.pdf
   '';
   installPhase = ''
     mkdir -p $out
