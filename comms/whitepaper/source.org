@@ -81,16 +81,16 @@ With ~disjunct~ derived from ~negate~ and ~conjunct~, and the unary temporal ope
 
 I use Lean's notations feature to make these operators easier to construct.
 #+BEGIN_SRC lean4
-notation φ "and" ψ => Proposition.conjunct φ ψ
-notation φ "U" ψ "in" w => Proposition.until φ w ψ
-notation φ "S" ψ "in" w => Proposition.since φ w ψ
-def or (φ ψ : Proposition T) : Proposition T := ~ (~ φ and ~ ψ)
-def eventually (w : Window) (φ : Proposition T) : Proposition T := tru U φ in w
-def always (w : Window) (φ : Proposition T) : Proposition T := ~ (eventually w (~ φ))
-def next (w : Window) (φ : Proposition T) : Proposition T := mtf U φ in w
-notation "{◇" w "}" φ => eventually w φ
-notation "{□" w "}" φ => always w φ
-notation "{◯" w "}" φ => next w φ
+notation phi "and" psi => Proposition.conjunct phi psi
+notation phi "U" psi "in" w => Proposition.until phi w psi
+notation phi "S" psi "in" w => Proposition.since phi w psi
+def or (phi psi : Proposition T) : Proposition T := ~ (~ phi and ~ psi)
+def eventually (w : Window) (phi : Proposition T) : Proposition T := tru U phi in w
+def always (w : Window) (phi : Proposition T) : Proposition T := ~ (eventually w (~ phi))
+def next (w : Window) (phi : Proposition T) : Proposition T := mtf U phi in w
+notation "{\Diamond" w "}" phi => eventually w phi
+notation "{\Box" w "}" phi => always w phi
+notation "{\circ" w "}" phi => next w phi
 
 #+END_SRC
 ** Automata
