@@ -9,25 +9,24 @@
 #+CITE_EXPORT: csl ./acm.csl
 
 #+BEGIN_abstract
-A financial contract is an interaction between people involving money. It is bad when there are bugs in the code executing these interactions. Additionally, it's not great when the interactions become too complicated to understand. Previously, the Algorithmic Contract Types Unified Standard (ACTUS) [cite@Brammertz2019SmartCD] attempted to tackle this twin problem by rendering interactions as atomic state machines that compose together. In this paper, we take a natural next step to metric temporal logic (MTL) and take a contract to be an MTL /specification/, showing the proof of concept on the principal at maturity loan (PAM). Along the way, we implement MTL in the Lean prover. The code is available at the https url https://github.com/cspr-rad/mtl-actus.
+A financial contract is an interaction between people involving money. It is bad when there are bugs in the code executing these interactions. Additionally, it's not great when the interactions become too complicated to understand. Previously, the Algorithmic Contract Types Unified Standard (ACTUS) [cite@Brammertz2019SmartCD] attempted to tackle this twin problem by rendering interactions as atomic state machines that compose together. In this paper, we take a natural next step to Metric Temporal Logic (MTL) and take a contract to be an MTL /specification/, showing the proof of concept on the principal at maturity loan (PAM). Along the way, we implement MTL in the Lean prover. The code is available at the https url https://github.com/cspr-rad/mtl-actus.
 #+END_abstract
 
 * Introduction
 Financial contracts, at their core, are interactions between people involving money. However, the execution of these interactions is increasingly reliant on code, which introduces the risk of bugs - a problem that has led to significant financial losses. Moreover, as financial instruments become more exotic, they often become too complex to interpret easily, further complicating the situation.
 
-The Algorithmic Contract Types Unified Standard (ACTUS) was an attempt to address this dual challenge. It aimed to simplify financial interactions by representing them as atomic state machines that could be composed together. However, this approach, while innovative, had its limitations.
+The Algorithmic Contract Types Unified Standard (ACTUS) is an attempt to address this dual challenge. It aimed to simplify financial interactions by representing them as atomic state machines that could be composed together. However, this approach, while innovative, had its limitations.
 
-We propose a step forward by leveraging ideas from the field of model checking. Specifically, we suggest using metric temporal logic (MTL) as a foundation for defining financial contracts. In this framework, a contract becomes an MTL specification. This approach offers two key advantages: firstly, MTL specifications can serve as an interpretable grounding for even the most complex financial instruments. Secondly, contracts can be rigorously checked to ensure they comply with these MTL specifications.
+We propose a step forward by leveraging ideas from the field of model checking. Specifically, we suggest using Metric Temporal Logic (MTL) as a foundation for defining financial contracts. In this framework, a contract becomes an MTL specification. This approach offers two key advantages: firstly, MTL specifications can serve as an interpretable grounding for even the most complex financial instruments. Secondly, contracts can be rigorously checked to ensure they comply with these MTL specifications.
 This methodology has the potential to significantly improve both the reliability and interpretability of financial contracts, addressing the core issues that have plagued the industry.
-** Problem statement
-ACTUS makes tremendous steps forward in the goal of verifiable financial contracts. However, it's current iteration falls short in a few ways. *Lorem ipsum*
+
 ** Contributions
 The current paper shows in principle how to model finance as a reactive system for the purposes of formal verification, on an example Principal at Maturity (PAM) contract.
 
 1. Reactive System Approach: We demonstrate how financial contracts can be modeled as reactive systems, a paradigm commonly used in computer science for systems that maintain ongoing interactions with their environment. This novel perspective allows us to apply well-established formal verification techniques from the realm of reactive systems to financial contracts.
 2. Formal Verification Framework: We introduce a framework for the formal verification of financial contracts. This approach enables rigorous mathematical proof of contract properties, potentially reducing errors and ambiguities in contract execution.
 3. Principal at Maturity (PAM) Case Study: To illustrate our methodology, we provide a detailed case study of a Principal at Maturity (PAM) contract. This common financial instrument serves as an accessible yet meaningful example to showcase the power and applicability of our approach.
-4. Temporal Logic Specification: We demonstrate how to express financial contract terms and conditions using metric temporal logic (MTL). This formal language allows for precise and unambiguous specification of time-dependent behaviors, which are crucial in financial contracts.
+4. Temporal Logic Specification: We demonstrate how to express financial contract terms and conditions using MTL. This formal language allows for precise and unambiguous specification of time-dependent behaviors, which are crucial in financial contracts.
 * Prior Work
 ** Algorithmic Contract Types Unified Standard
 In [cite:@Brammertz2019SmartCD], the ACTUS (Algorithmic Contract Types Unified Standard) introduces a formalized approach to representing financial contracts using concepts from state machine theory. Developed by the ACTUS Financial Research Foundation, this framework models financial instruments as algorithmic contracts with well-defined states, events, and transition functions.
@@ -47,9 +46,8 @@ Building on this foundation, [cite:@Bahr2015CertifiedSM] developed a certified s
 
 ** B-Method
 [?cite:@zacharya's preprint] have a preprint on ACTUS in B-Method /this may not be public enough to cite by now/
-* (body) Problem statement (Avi)
 * MTL ACTUS in Lean 4
-Lean4 serves as our implementation language for the project. Lean4 [cite:@Moura2021TheL4] is a modern, open-source theorem prover and programming language that combines powerful automated reasoning with an expressive type system. Developed by Microsoft Research and the Lean community, it excels in mathematical formalization and formal verification. For our work on financial contracts, Lean4's strong type system and ability to handle complex logical statements make it ideal for implementing and reasoning about metric temporal logic (MTL) specifications. Its syntax, designed to be close to mathematical notation, allows us to clearly express and verify our MTL formalization of financial contracts.
+Lean4 serves as our implementation language for the project. Lean4 [cite:@Moura2021TheL4] is a modern, open-source theorem prover and programming language that combines powerful automated reasoning with an expressive type system. Developed by Microsoft Research and the Lean community, it excels in mathematical formalization and formal verification. For our work on financial contracts, Lean4's strong type system and ability to handle complex logical statements make it ideal for implementing and reasoning about MTL specifications. Its syntax, designed to be close to mathematical notation, allows us to clearly express and verify our MTL formalization of financial contracts.
 
 ** Money and time
 Unlike ACTUS, we consider the hard part of time to be a presentational step taken later, and content ourselves with something like Unix Time [cite:@UnixTimeWiki] (a newtype of whole numbers). We do something similar with money.
@@ -66,22 +64,37 @@ structure Money where
   deriving BEq, Hashable, Repr, DecidableEq
 #+END_SRC
 ** Metric temporal logic
-Temporal logic is widely used in model checking to verify reactive systems. Metric Temporal Logic (MTL) is an extension of temporal logic that incorporates quantitative time constraints. It allows for the specification of time-bound properties in real-time systems, making it particularly useful for describing and verifying time-sensitive behaviors. MTL formulas can express properties such as "event A must occur within 5 time units of event B" or "condition C must hold for at least 10 time units." This makes MTL well-suited for modeling and analyzing systems where precise timing is crucial, such as financial contracts with specific execution deadlines or duration-based clauses.
+Temporal logic [cite:@Pnueli1977LTL] is widely used in model checking to verify reactive systems [cite:@Baier2008PrinciplesModelChecking]. MTL is an extension of temporal logic that incorporates quantitative time constraints. It allows for the specification of time-bound properties in real-time systems, making it particularly useful for describing and verifying time-sensitive behaviors. MTL formulas can express properties such as "event A must occur within 5 time units of event B" or "condition C must hold for at least 10 time units." This makes MTL well-suited for modeling and analyzing systems where precise timing is crucial, such as financial contracts with specific execution deadlines or duration-based clauses.
 
 #+BEGIN_SRC lean4
 variable {T : Type} [AtomicProp T]
 
 inductive Proposition (T : Type) : Type where
-| mt_t : Proposition T
+| tru : Proposition T
 | atom : T -> Proposition T
 | negate : Proposition T -> Proposition T
 | conjunct : Proposition T -> Proposition T -> Proposition T
 | until : Proposition T -> Window -> Proposition T -> Proposition T
 | since : Proposition T -> Window -> Proposition T -> Proposition T
 #+END_SRC
-With ~disjunct~ derived from ~negate~ and ~conjunct~, and the unary temporal operators given in the usual way as combinations of the binary temporal operators ~since~ and ~until~ with ~mt_t~ (the value true). In particular, ~eventually~ ($\Diamond \phi$) is given $T U \phi$ and ~always~ ($\Box \phi$) is given $\neg \Diamond \neg \phi$. We additionally have the temporal operator ~next~ ($\circ \phi$) from $(\neg T) U \phi$, saying that $\phi$ is in the subsequent timestamp. In this MTL, indexing an operator with the window ~(Timestamp.infinity, Timestamp.infinity)~ means a degenerate case where the temporal operator simplifies to a linear temporal logic (LTL) operator.
+With ~disjunct~ derived from ~negate~ and ~conjunct~, and the unary temporal operators given in the usual way as combinations of the binary temporal operators ~since~ ($S$) and ~until~ ($U$) with ~tru~ (the value true $T$). In particular, ~eventually~ ($\Diamond_w \phi$) is given $\top U_w \phi$ and ~always~ ($\Box_w \phi$) is given $\neg \Diamond_w \neg \phi$. We additionally have the temporal operator ~next~ ($\circ_w \phi$) from $(\neg \top) U_w \phi$, saying that $\phi$ is in the subsequent timestamp. In this MTL, indexing an operator with the window ~(Timestamp.infinity, Timestamp.infinity)~ means a degenerate case where the temporal operator simplifies to a Linear Temporal Logic (LTL) operator.
+
+I use Lean's notations feature to make these operators easier to construct.
+#+BEGIN_SRC lean4
+notation φ "and" ψ => Proposition.conjunct φ ψ
+notation φ "U" ψ "in" w => Proposition.until φ w ψ
+notation φ "S" ψ "in" w => Proposition.since φ w ψ
+def or (φ ψ : Proposition T) : Proposition T := ~ (~ φ and ~ ψ)
+def eventually (w : Window) (φ : Proposition T) : Proposition T := tru U φ in w
+def always (w : Window) (φ : Proposition T) : Proposition T := ~ (eventually w (~ φ))
+def next (w : Window) (φ : Proposition T) : Proposition T := mtf U φ in w
+notation "{◇" w "}" φ => eventually w φ
+notation "{□" w "}" φ => always w φ
+notation "{◯" w "}" φ => next w φ
+
+#+END_SRC
 ** Automata
-In the context of Metric Temporal Logic (MTL), automata play a crucial role in both theoretical analysis and practical applications. Timed automata, in particular, are closely related to MTL as they provide a way to model and verify real-time systems with quantitative timing constraints.
+In the context of MTL, automata play a crucial role in both theoretical analysis and practical applications. Timed automata, in particular, are closely related to MTL as they provide a way to model and verify real-time systems with quantitative timing constraints.
 
 The relationship between MTL and automata is significant for several reasons:
 1. Decidability and complexity: Automata-based techniques are often used to establish decidability results and complexity bounds for various fragments of MTL.
@@ -91,6 +104,10 @@ The relationship between MTL and automata is significant for several reasons:
 
 This connection between MTL and automata provides powerful tools for analyzing and implementing time-constrained systems, including financial contracts with precise temporal requirements.
 #+BEGIN_SRC lean4
+structure State where
+  idx : Nat
+  deriving BEq, Hashable, Repr
+
 variable (Alphabet : Type) [AtomicProp Alphabet]
 
 structure Transition where
@@ -108,7 +125,7 @@ structure TFA where
   transitions : List (Transition Alphabet)
   acceptingStates : Lean.HashSet State
 #+END_SRC
-
+The timed finite automata (TFA) type is defined in the usual way, where a guarded and labeled transition is better represented as a struct than a function.
 ** Contracts
 A contract consists of a type for the terms that the counterparties agree to and a type of events. With that, you give a /contract/ as an MTL formula (or spec) along with it's corresponding automaton.
 #+BEGIN_SRC lean4
@@ -119,7 +136,7 @@ structure ActusContract where
   contract : terms -> Proposition event
   automaton : terms -> TFA event
 #+END_SRC
-*** PAM
+*** ~PAM~
 We show the schema in proof of concept for Principal at Maturity (PAM). A PAM is a loan with periodic interest payments, but the principal is not paid at all until the maturity date, which closes the contract.
 #+BEGIN_SRC lean4
 -- payment interval assumed to be 1
@@ -172,6 +189,9 @@ def ip_continuous_till_mat (terms : Terms) : Contract :=
 def contract (terms : Terms) : Contract :=
     ip_continuous_till_mat terms and safety terms
 #+END_SRC
+
+Omitted here for brevity is the PAM TFA template.
+** TODO show the eval of the automaton agreeing with the spec.
 * Future work
 ** Compiling general timed finite automata from MTL specs
 The algorithm to generate the automaton that corresponds to a given MTL spec is known, but we have not implemented it in the current work.
@@ -205,7 +225,7 @@ By pursuing this direction, we aim to further advance the application of formal 
 * Conclusion
 In this paper, we have taken a preliminary step towards addressing two persistent challenges in financial technology: the risk of code bugs in contract execution and the increasing complexity of financial instruments. While the Algorithmic Contract Types Unified Standard (ACTUS) previously attempted to address these issues by modeling financial interactions as composable state machines, we recognized the potential for further improvement.
 
-Our contribution lies in exploring the application of metric temporal logic (MTL) to financial contract specification. Using a Principal at Maturity (PAM) loan as a simple yet illustrative example, we have demonstrated how MTL can be used to express contract terms and behaviors. We implemented this approach using the Lean prover, providing a proof of concept for representing financial contracts as MTL specifications.
+Our contribution lies in exploring the application of MTL to financial contract specification. Using a Principal at Maturity (PAM) loan as a simple yet illustrative example, we have demonstrated how MTL can be used to express contract terms and behaviors. We implemented this approach using the Lean prover, providing a proof of concept for representing financial contracts as MTL specifications.
 
 This work represents an initial exploration rather than a comprehensive solution. By treating a financial contract as an MTL specification, we aim to provide a foundation for more rigorous verification and potentially improved interpretability. However, we acknowledge that significant work remains to be done to fully realize these benefits and to extend this approach to more complex financial instruments.
 

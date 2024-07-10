@@ -6,18 +6,20 @@ End of Q3
 ** Reviewers
 *** authors:
 - Quinn: first
-- Avi: "what's wrong with actus" section
 - Mark: leadership/oversight
 - Matt?:
 *** alpha (internal)
 - Una: Does a copy-editing pass mean authorship?
-- Chen: same as Una
 - Ed?
+- Avi
+- Marijan
 *** beta (external)
 - Zacharya
 - Mo
 - Morgan
 - kind2 guys
+- EPFL/ETH folks from January
+- Anthony Hart
 ** Who is the audience?
 *** If we prioritize the FV audience:
 - "they sit down for two hours to read this and take away exciting ideas with their own thoughts"
@@ -58,3 +60,6 @@ Matt's take:
 ** Deadilne draft 1:
 - Jul 17- should be going out to alpha readers.
 * Notes Jul10 call
+** Matt's notes:
+- abstract citation latex bug
+- lorem ipsum in 1.1
