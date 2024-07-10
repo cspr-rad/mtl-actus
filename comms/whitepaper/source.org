@@ -4,6 +4,7 @@
 #+EMAIL: quinn@casper.network
 #+INSTITUTE: Casper Association
 #+DATE: $\today$ DRAFT
+#+OPTIONS: num:t toc:t
 #+BIBLIOGRAPHY: ./b.bib
 #+CITE_EXPORT: csl ./acm.csl
 
@@ -47,13 +48,26 @@ Building on this foundation, [cite:@Bahr2015CertifiedSM] developed a certified s
 ** B-Method
 [?cite:@zacharya's preprint] have a preprint on ACTUS in B-Method /this may not be public enough to cite by now/
 * (body) Problem statement (Avi)
-* (body) (Code from the codebase)
-Unlike ACTUS, we consider the hard part of time to be a presentational step taken later, and content ourselves with something like Unix Time (a newtype of whole numbers). We do something similar with money.
+* MTL ACTUS in Lean 4
+Lean4 serves as our implementation language for the project. Lean4 [cite:@Moura2021TheL4] is a modern, open-source theorem prover and programming language that combines powerful automated reasoning with an expressive type system. Developed by Microsoft Research and the Lean community, it excels in mathematical formalization and formal verification. For our work on financial contracts, Lean4's strong type system and ability to handle complex logical statements make it ideal for implementing and reasoning about metric temporal logic (MTL) specifications. Its syntax, designed to be close to mathematical notation, allows us to clearly express and verify our MTL formalization of financial contracts.
 
+** Money and time
+Unlike ACTUS, we consider the hard part of time to be a presentational step taken later, and content ourselves with something like Unix Time [cite:@UnixTimeWiki] (a newtype of whole numbers). We do something similar with money.
+#+BEGIN_SRC lean4
+inductive Timestamp : Type where
+  | t : UInt64 -> Timestamp
+  | infinity : Timestamp
+  deriving BEq, Hashable, Repr, DecidableEq
+...
+def Window : Type := (Timestamp × Timestamp)
+...
+structure Money where
+  amount : Int
+  deriving BEq, Hashable, Repr, DecidableEq
+#+END_SRC
 ** Metric temporal logic
-(lorem ipsum)
+Temporal logic is widely used in model checking to verify reactive systems. Metric Temporal Logic (MTL) is an extension of temporal logic that incorporates quantitative time constraints. It allows for the specification of time-bound properties in real-time systems, making it particularly useful for describing and verifying time-sensitive behaviors. MTL formulas can express properties such as "event A must occur within 5 time units of event B" or "condition C must hold for at least 10 time units." This makes MTL well-suited for modeling and analyzing systems where precise timing is crucial, such as financial contracts with specific execution deadlines or duration-based clauses.
 
-Metric temporal logic is linear temporal logic where each temporal operator is indexed by a /window/ or interval of timestamps.
 #+BEGIN_SRC lean4
 variable {T : Type} [AtomicProp T]
 
@@ -65,10 +79,17 @@ inductive Proposition (T : Type) : Type where
 | until : Proposition T -> Window -> Proposition T -> Proposition T
 | since : Proposition T -> Window -> Proposition T -> Proposition T
 #+END_SRC
-With ~disjunct~ derived from ~negate~ and ~conjunct~, and the unary temporal operators given as combinations of the binary temporal operators ~since~ and ~until~ with ~mt_t~ (the value true).
-(lorem ipsum)
+With ~disjunct~ derived from ~negate~ and ~conjunct~, and the unary temporal operators given in the usual way as combinations of the binary temporal operators ~since~ and ~until~ with ~mt_t~ (the value true). In particular, ~eventually~ ($\Diamond \phi$) is given $T U \phi$ and ~always~ ($\Box \phi$) is given $\neg \Diamond \neg \phi$. We additionally have the temporal operator ~next~ ($\circ \phi$) from $(\neg T) U \phi$, saying that $\phi$ is in the subsequent timestamp. In this MTL, indexing an operator with the window ~(Timestamp.infinity, Timestamp.infinity)~ means a degenerate case where the temporal operator simplifies to a linear temporal logic (LTL) operator.
 ** Automata
-(lorem ipsum)
+In the context of Metric Temporal Logic (MTL), automata play a crucial role in both theoretical analysis and practical applications. Timed automata, in particular, are closely related to MTL as they provide a way to model and verify real-time systems with quantitative timing constraints.
+
+The relationship between MTL and automata is significant for several reasons:
+1. Decidability and complexity: Automata-based techniques are often used to establish decidability results and complexity bounds for various fragments of MTL.
+2. Model checking: Timed automata can be used as an operational model against which MTL specifications can be verified, enabling efficient model checking algorithms.
+3. Expressiveness: The expressive power of different MTL fragments can be characterized by corresponding classes of timed automata, providing insights into the logic's capabilities.
+4. Synthesis: Automata-theoretic approaches can be employed to synthesize controllers or implementations that satisfy given MTL specifications.
+
+This connection between MTL and automata provides powerful tools for analyzing and implementing time-constrained systems, including financial contracts with precise temporal requirements.
 #+BEGIN_SRC lean4
 variable (Alphabet : Type) [AtomicProp Alphabet]
 
@@ -87,9 +108,73 @@ structure TFA where
   transitions : List (Transition Alphabet)
   acceptingStates : Lean.HashSet State
 #+END_SRC
-(lorem ipsum)
+
 ** Contracts
+A contract consists of a type for the terms that the counterparties agree to and a type of events. With that, you give a /contract/ as an MTL formula (or spec) along with it's corresponding automaton.
+#+BEGIN_SRC lean4
+structure ActusContract where
+  terms : Type
+  event : Type
+  event_atomicprop : AtomicProp event
+  contract : terms -> Proposition event
+  automaton : terms -> TFA event
+#+END_SRC
+*** PAM
+We show the schema in proof of concept for Principal at Maturity (PAM). A PAM is a loan with periodic interest payments, but the principal is not paid at all until the maturity date, which closes the contract.
+#+BEGIN_SRC lean4
+-- payment interval assumed to be 1
+structure Terms where
+  principal : Money
+  interest_rate : Timestamp -> Scalar -- fixed rate as constant function
+  start_date : Timestamp
+  maturity : TimeDelta
+
+inductive Event :=
+| Maturity : Event
+| PrincipalRepayment : Event
+| InterestPayment : Event
+  deriving BEq, Hashable, Repr, DecidableEq
+
+def Contract := Proposition Event deriving BEq, Hashable, Repr
+#+END_SRC
+
+A modest safety property is that it is not maturity date until at least one interest payment.
+$$
+S := (\neg \texttt{Maturity}) U_{cl} \texttt{InterestPayment}
+$$
+Where $cl$ represents the time window of the whole contract length, ~(start_date, start_date + maturity)~.
+
+Another important factor if we're going to capture PAM behavior in the spec is that interest payments are continuous until maturity
+$$
+C := \Box_{cl} (\texttt{Maturity} \to (\circ_{cl} (\texttt{InterestPayment} \lor \texttt{PrincipalRepayment}))) U_{cl} \texttt{Maturity}
+$$
+
+So our /contract specification/ for PAM can be written
+$$
+S \land C
+$$
+Which looks and lean4 precisely as
+#+BEGIN_SRC lean4
+def safety (terms : Terms) : Contract :=
+  let cl := contract_length terms;
+  (~ [[Event.Maturity]]) U [[Event.InterestPayment]] in cl
+
+def ip_continuous_till_mat (terms : Terms) : Contract :=
+  let cl := contract_length terms;
+  {\Box cl} ([[Event.InterestPayment]] implies
+      ({◯ cl.incr_start {dt := 1}}
+        ([[Event.InterestPayment]]
+        or [[Event.PrincipalRepayment]])
+      )
+    )
+    U [[Event.Maturity]] in cl
+
+def contract (terms : Terms) : Contract :=
+    ip_continuous_till_mat terms and safety terms
+#+END_SRC
 * Future work
+** Compiling general timed finite automata from MTL specs
+The algorithm to generate the automaton that corresponds to a given MTL spec is known, but we have not implemented it in the current work.
 ** Implementing the remaining ACTUS taxonomy
 There is a folk wisdom among ACTUS circles that PAM is 80% of the work. However, it still remains for us to implement the other 30something contracts in the ACTUS taxonomy.
 ** Assume-guarantee contracts

@@ -1,6 +1,6 @@
 #+title: Tactics
 
-* Notes Jun26 call w matt, avi, mark
+* Notes Jun26 call w Matt, Avi, Mark
 ** Timeline:
 End of Q3
 ** Reviewers
@@ -54,5 +54,7 @@ Matt's take:
 *** (body)
 *** future work
 *** conclusion
-* Notes Jul2 call
-* Notes Jul9 call
+* Notes Jul3 call w Mark, Avi
+** Deadilne draft 1:
+- Jul 17- should be going out to alpha readers.
+* Notes Jul10 call
