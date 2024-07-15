@@ -80,4 +80,4 @@ namespace UnitTest
   -- #eval PAM.automaton.accepts
 end UnitTest
 
-def hello := "world"
+def hello := if (PAM.automaton UnitTest.somePam).accepts _ UnitTest.somePamWord then "true" else "false"

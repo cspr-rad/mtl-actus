@@ -29,6 +29,7 @@ instance : OfNat Clock 0 where
 -- a limitation: alphabet is singleton rather than `Lean.HashSet`
 
 def ClockMap := Lean.RBMap ClockVar Clock (fun _ _ => Ordering.lt)
+-- idea: rethink this as Alphabet -> time(nat)
 
 inductive GuardOp : Type :=
   | le
@@ -76,7 +77,7 @@ namespace Execution
 
   structure TimedLetter where
     symbol : Alphabet
-    clock : Clock
+    clock : Clock -- i think its right to change from Clock to ClockVar
     deriving BEq, Hashable, Repr
   instance TimedLetterLE : LE (@TimedLetter Alphabet) where
     le x y := x.clock ≤ y.clock

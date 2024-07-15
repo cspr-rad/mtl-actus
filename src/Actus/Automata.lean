@@ -54,13 +54,19 @@ namespace TimedFinite
 
   def TFA.accepts (tfa : TFA Alphabet) (word : @Execution.TimedWord Alphabet) : Bool := Id.run do
     let mut currentState := tfa.initialState
-    let mut clockValues : ClockMap := Lean.RBMap.empty
+    -- let mut clockValues : ClockMap = project out the clockvars tfa.guardConditions
+    let mut clockValues : ClockMap := Lean.RBMap.ofList (tfa.transitions.map
+        (fun transition => (transition.guard.clock, 0)))
     for timedLetter in word.letters do
       let mut validTransition := false
       for transition in tfa.transitions do
         if transition.source == currentState ∧ transition.symbol == timedLetter.symbol then
           let guardSatisfied := transition.guard.eval clockValues timedLetter.clock
           if guardSatisfied then
+            for (clockVar, clock) in clockValues.toList do
+              clockValues := clockValues.insert clockVar (clock.incr timedLetter.clock.tick)
+              if transition.reset.contains clockVar then
+                clockValues := clockValues.insert clockVar 0
             validTransition := true
             currentState := transition.target
             for clockLabel in transition.reset do
