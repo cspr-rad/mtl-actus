@@ -1,0 +1,32 @@
+#+title: Pseudocode
+
+* pseudocode for new tfa accepts now that TimedLetter type takes a timestamp
+
+initial extended location
+- extended lcoatoins are locations (states) with a valuation (ClockMap)
+- convenience function that sets every clockVar to zero at the initial location
+
+- ~accepts' : tfa, word -> initLocation, initClockMap -> bool~
+- ~accepts : tfa, word -> bool~
+  - assumes tfa's initial location
+  - assumes the default initClockMap
+
+- The default initClockMap:
+  - for each edge in tfa: for each guard in edge: set guard.clockVar to zero
+
+* Fixing guardCondition.eval
+#+BEGIN_SRC lean4
+def GuardCondition.eval (gc : GuardCondition) (clockValues : ClockMap) (incrClock : Clock) : Bool :=
+  match clockValues.find? gc.clock with
+  | none => false
+  | some clockValue => let cv := clockValue.incr incrClock.tick;
+    match gc.op with
+    | GuardOp.le => cv.le gc.bound
+    | GuardOp.lt => cv.lt gc.bound
+    | GuardOp.ge => cv.ge gc.bound
+    | GuardOp.gt => cv.gt gc.bound
+#+END_SRC
+not tick but a timedelta. don't incr by a clock but incr by $clockMap[someClockVar] + t_i - t_{i-1}$
+
+* idea:
+- have a bankrupt location, and ~accepts~ shouldn't allow it

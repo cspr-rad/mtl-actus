@@ -76,6 +76,18 @@ def Timestamp.toTimeDelta (t : Timestamp) : TimeDelta :=
 theorem TimeDelta.inv (td : TimeDelta) : td = td.toTimestamp.toTimeDelta :=
   by unfold toTimestamp Timestamp.toTimeDelta <;> simp
 
+structure FiniteTimestamp where
+  t : Nat
+  deriving BEq, Hashable, Repr
+instance : OfNat FiniteTimestamp 0 where
+    ofNat := { t := 0 }
+instance FiniteTimestampLE : LE FiniteTimestamp where
+  le x y := x.t ≤ y.t
+instance FiniteTimestampLT : LT FiniteTimestamp where
+  lt x y := x.t < y.t
+def FiniteTimestamp.map (f : Nat -> Nat) (ft : FiniteTimestamp) : FiniteTimestamp :=
+  { t := f ft.t }
+
 namespace Interval
   def T : Type := (Timestamp × Timestamp)
   deriving  BEq, Hashable, Repr

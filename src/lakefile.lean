@@ -7,6 +7,9 @@ package «actus» where
 lean_lib «Actus» where
   -- add library configuration options here
 
+lean_lib «Tests» where
+  -- add library configuration options here
+
 @[default_target]
-lean_exe «actus» where
-  root := `Main
+lean_exe «test» where
+  root := `Tests.Runner

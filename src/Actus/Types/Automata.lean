@@ -1,6 +1,7 @@
 import Lean.Data.RBMap
-import Actus.Types.Numbers
 import Actus.Types.Classes
+import Actus.Types.Numbers
+import Actus.Types.Time
 
 variable {Alphabet : Type} [AtomicProp Alphabet]
 
@@ -29,7 +30,6 @@ instance : OfNat Clock 0 where
 -- a limitation: alphabet is singleton rather than `Lean.HashSet`
 
 def ClockMap := Lean.RBMap ClockVar Clock (fun _ _ => Ordering.lt)
--- idea: rethink this as Alphabet -> time(nat)
 
 inductive GuardOp : Type :=
   | le
@@ -44,15 +44,18 @@ structure GuardCondition where
   bound : Nat
   deriving BEq, Hashable, Repr
 
-def GuardCondition.eval (gc : GuardCondition) (clockValues : ClockMap) (incrClock : Clock) : Bool :=
+def GuardCondition.eval (gc : GuardCondition) (clockValues : ClockMap) (incrBy : Nat) : Bool :=
   match clockValues.find? gc.clock with
   | none => false
-  | some clockValue => let cv := clockValue.incr incrClock.tick;
+  | some clockValue => let cv := clockValue.incr incrBy;
     match gc.op with
     | GuardOp.le => cv.le gc.bound
     | GuardOp.lt => cv.lt gc.bound
     | GuardOp.ge => cv.ge gc.bound
     | GuardOp.gt => cv.gt gc.bound
+
+def GuardCondition.evalD (gc : GuardCondition) (clockValues : ClockMap) : Bool :=
+  gc.eval clockValues 0
 
 namespace Execution
   structure Entry where
@@ -77,12 +80,12 @@ namespace Execution
 
   structure TimedLetter where
     symbol : Alphabet
-    clock : Clock -- i think its right to change from Clock to ClockVar
+    time : FiniteTimestamp
     deriving BEq, Hashable, Repr
   instance TimedLetterLE : LE (@TimedLetter Alphabet) where
-    le x y := x.clock ≤ y.clock
+    le x y := x.time ≤ y.time
   instance : LT (@TimedLetter Alphabet) where
-    lt x y := x.clock < y.clock
+    lt x y := x.time < y.time
 
   def isNonDecreasing (letters: List (@TimedLetter Alphabet)) := ∀ (i j : Nat) (H0 : j < letters.length) (H1 : i < j),
       let H2 : i < letters.length := Clock.lt_trans H1 H0;

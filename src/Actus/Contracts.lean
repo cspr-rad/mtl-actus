@@ -56,13 +56,14 @@ namespace PAM
     let cl := contract_length terms
     let start := State.mk 0
     let interestPaid := State.mk 1
-    let matured := State.mk 2
+    let principalRepaid := State.mk 2
+    let matured := State.mk 3
     let states := Lean.HashSet.empty
     let alphabet := Lean.HashSet.empty
-    let acceptingStates := Lean.HashSet.empty
+    let acceptingStates := Lean.HashSet.empty.insert matured
 
     let tfa : TFA Event := {
-      states := states.insertMany [start, interestPaid, matured],
+      states := states.insertMany [start, interestPaid, principalRepaid, matured],
       alphabet := alphabet.insertMany [Event.InterestPayment, Event.PrincipalRepayment, Event.Maturity],
       initialState := start,
       transitions := [
@@ -71,31 +72,31 @@ namespace PAM
           target := interestPaid,
           symbol := Event.InterestPayment,
           guard := { clock := ClockVar.mk 0, op := GuardOp.le, bound := terms.maturity.dt.toNat },
-          reset := []
+          reset := [ClockVar.mk 0]
         },
         {
           source := interestPaid,
           target := interestPaid,
           symbol := Event.InterestPayment,
           guard := { clock := ClockVar.mk 0, op := GuardOp.le, bound := terms.maturity.dt.toNat },
-          reset := [ClockVar.mk 0]
+          reset := []
         },
         {
           source := interestPaid,
-          target := interestPaid,
+          target := principalRepaid,
           symbol := Event.PrincipalRepayment,
           guard := { clock := ClockVar.mk 0, op := GuardOp.le, bound := terms.maturity.dt.toNat },
-          reset := [ClockVar.mk 0]
+          reset := []
         },
         {
-          source := interestPaid,
+          source := principalRepaid,
           target := matured,
           symbol := Event.Maturity,
           guard := { clock := ClockVar.mk 0, op := GuardOp.ge, bound := terms.maturity.dt.toNat },
           reset := []
         }
       ],
-      acceptingStates := acceptingStates.insert matured
+      acceptingStates := acceptingStates
     }
 
     return tfa
