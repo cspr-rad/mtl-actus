@@ -12,4 +12,4 @@ lean_lib «Tests» where
 
 @[default_target]
 lean_exe «test» where
-  root := `Tests.Runner
+  root := `Tests.Main

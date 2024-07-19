@@ -1,5 +1,5 @@
 import Actus
-import Tests.Framework
+import Tests.Runner
 
 def somePam : PAM.Terms := {
   principal := { amount := 100 },
