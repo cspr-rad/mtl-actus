@@ -54,10 +54,10 @@ def trafficTfa : TimedFinite.TFA TrafficLightState :=
     }
   ]
 
-  { states := states
-  , alphabet := alphabet
-  , initialState := red
-  , transitions := transitions
-  , acceptingStates := states  -- All states are accepting in this case
+  { states,
+    alphabet,
+    initialState := red,
+    transitions,
+    acceptingStates := states  -- All states are accepting in this case
   }
 

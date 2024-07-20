@@ -44,18 +44,15 @@ structure GuardCondition where
   bound : Nat
   deriving BEq, Hashable, Repr
 
-def GuardCondition.eval (gc : GuardCondition) (clockValues : ClockMap) (incrBy : Nat) : Bool :=
+def GuardCondition.eval (gc : GuardCondition) (clockValues : ClockMap) : Bool :=
   match clockValues.find? gc.clock with
   | none => false
-  | some clockValue => let cv := clockValue.incr incrBy;
+  | some clockValue =>
     match gc.op with
-    | GuardOp.le => cv.le gc.bound
-    | GuardOp.lt => cv.lt gc.bound
-    | GuardOp.ge => cv.ge gc.bound
-    | GuardOp.gt => cv.gt gc.bound
-
-def GuardCondition.evalD (gc : GuardCondition) (clockValues : ClockMap) : Bool :=
-  gc.eval clockValues 0
+    | GuardOp.le => clockValue.le gc.bound
+    | GuardOp.lt => clockValue.lt gc.bound
+    | GuardOp.ge => clockValue.ge gc.bound
+    | GuardOp.gt => clockValue.gt gc.bound
 
 namespace Execution
   structure Entry where
@@ -94,4 +91,15 @@ namespace Execution
   structure TimedWord where
     letters : List (@TimedLetter Alphabet)
     nonDecreasing : isNonDecreasing letters
+
+  structure RunEntry where
+    l0 : State
+    v0 : FiniteTimestamp
+    sigma : @TimedLetter Alphabet
+    l1 : State
+    v1 : FiniteTimestamp
+
+  structure Run where
+    entries : List (@RunEntry Alphabet)
+    chained : ∀ (i : Nat) (H : i + 1 < entries.length), entries[i].l1 = entries[i+1].l0
 end Execution

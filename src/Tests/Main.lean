@@ -1,12 +1,17 @@
 import Actus
 import Tests
 
+def tests : List (TestM Unit) := [
+  testPam,
+  TrafficEmpty.test,
+  TrafficNormal.test,
+  TrafficPedestrian.test,
+  TrafficInvalidQuick.test,
+  TrafficEarlyPedestrian.test,
+  TrafficLongCycle.test,
+]
+
 def main : IO Unit := do
-  IO.println "Lean4 Test Runner"
-  printTestRun testPam
-  printTestRun TrafficEmpty.test
-  printTestRun TrafficNormal.test
-  printTestRun TrafficPedestrian.test
-  printTestRun TrafficInvalidQuick.test
-  printTestRun TrafficEarlyPedestrian.test
-  printTestRun TrafficLongCycle.test
+  IO.println s!"Lean4 test runner about to run {tests.length} tests"
+  for test in tests do
+    printTestRun test

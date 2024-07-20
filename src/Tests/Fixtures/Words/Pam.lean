@@ -1,6 +1,6 @@
 import Actus
 
-def somePam : PAM.Terms := {
+def pamTerms : PAM.Terms := {
   principal := { amount := 100 },
   interest_rate := fun _ => { value := 1 },
   start_date := Timestamp.t 0,
@@ -10,7 +10,7 @@ def somePam : PAM.Terms := {
 instance PAMInhabited : Inhabited (@Execution.TimedLetter PAM.Event) where
   default := { symbol := PAM.Event.InterestPayment, time := FiniteTimestamp.mk 0 }
 
-def somePamWord : @Execution.TimedWord PAM.Event :=
+def word : @Execution.TimedWord PAM.Event :=
   let ip1 := { symbol := PAM.Event.InterestPayment, time := FiniteTimestamp.mk 1 };
   let ip2 := { symbol := PAM.Event.InterestPayment, time := FiniteTimestamp.mk 2 };
   let pr := { symbol := PAM.Event.PrincipalRepayment, time := FiniteTimestamp.mk 3 };
