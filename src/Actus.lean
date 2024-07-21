@@ -9,4 +9,4 @@ import «Actus».Types.Automata
 import «Actus».Logic
 import «Actus».Automata
 import «Actus».Contracts
-import «Actus».Basic
+import «Actus».Etc.ComposeExamples

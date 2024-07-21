@@ -1,7 +1,7 @@
 import Actus.Contracts
 import Actus.Automata
+/-! Sketch: use monadic bind to pipe swap and pam into a composed contract. !-/
 
--- Sketch: use monadic bind to pipe swap and pam into a composed contract.
 -- Fixed leg payment version
 def pam_swppv_event_map (e : PAM.Event) : SWPPV.Event :=
   match e with

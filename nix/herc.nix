@@ -14,7 +14,7 @@ in
         comms-effect = import ./comms/effect.nix { inherit whitepaper hci-effects; };
       in
       {
-        ciSystems = [ "x86_64-linux" ];
+        ciSystems = [ ciSystem ];
         onPush = {
           comms =
             if run-condition then
