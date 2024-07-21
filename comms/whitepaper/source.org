@@ -94,7 +94,7 @@ notation "{\circ" w "}" phi => next w phi
 
 #+END_SRC
 ** Automata
-In the context of MTL, automata play a crucial role in both theoretical analysis and practical applications. Timed automata, in particular, are closely related to MTL as they provide a way to model and verify real-time systems with quantitative timing constraints.
+In the context of MTL, automata play a crucial role in both theoretical analysis and practical applications. Timed automata, in particular, are closely related to MTL as they provide a way to model and verify real-time systems with quantitative timing constraints [cite:@Alur1994TimedAutomata].
 
 The relationship between MTL and automata is significant for several reasons:
 1. Decidability and complexity: Automata-based techniques are often used to establish decidability results and complexity bounds for various fragments of MTL.

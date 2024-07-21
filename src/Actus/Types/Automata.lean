@@ -1,4 +1,4 @@
-import Lean.Data.AssocList
+import Actus.Data.AssocList
 import Actus.Types.Classes
 import Actus.Types.Numbers
 import Actus.Types.Time

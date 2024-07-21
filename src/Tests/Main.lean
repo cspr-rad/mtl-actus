@@ -5,6 +5,7 @@ def tests : List (TestM Unit) := [
   ClockMapLookup.test,
   GuardConditionEval.test,
   ValuationUpdate.test,
+  IsValidTransition.test,
   ExecuteValidTransition.test,
   TrafficEmpty.test,
   TrafficNormal.test,
@@ -12,7 +13,7 @@ def tests : List (TestM Unit) := [
   TrafficInvalidQuick.test,
   TrafficEarlyPedestrian.test,
   TrafficLongCycle.test,
-  testPam,
+  Pam.test,
 ]
 
 def main : IO Unit := do
@@ -20,6 +21,6 @@ def main : IO Unit := do
   for test in tests do
     printTestRun test
 
-  IO.println "Debug output:"
-  let b <- TrafficNormal.Debug.acceptsIo
-  IO.println s!"TrafficNormal.Debug.acceptsIo = {b}"
+  --IO.println "Debug output:"
+  --let b <- TrafficInvalidQuick.Debug.acceptsIo
+  --IO.println s!"TrafficInvalidQuick.Debug.acceptsIo = {b}"
