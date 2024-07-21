@@ -1,4 +1,4 @@
-import Lean.Data.RBMap
+import Lean.Data.AssocList
 import Actus.Types.Classes
 import Actus.Types.Numbers
 import Actus.Types.Time
@@ -11,9 +11,13 @@ structure State where
 structure ClockVar where
   name : Nat
   deriving BEq, Hashable, Repr, Ord, DecidableEq
+ instance ClockVarLE : LE ClockVar where
+  le x y := x.name ≤ y.name
 structure Clock where
   tick : Nat
   deriving BEq, Hashable, Repr, Ord, DecidableEq
+instance ClockInhabited : Inhabited Clock where
+  default := { tick := 0 }
 instance ClockLE : LE Clock where
   le x y := x.tick ≤ y.tick
 instance : LT Clock where
@@ -28,8 +32,8 @@ instance : OfNat Clock 0 where
   ofNat := { tick := 0 }
 
 -- a limitation: alphabet is singleton rather than `Lean.HashSet`
-
-def ClockMap := Lean.RBMap ClockVar Clock (fun _ _ => Ordering.lt)
+--
+def ClockMap : Type := Lean.AssocList ClockVar Clock
 
 inductive GuardOp : Type :=
   | le
@@ -45,14 +49,14 @@ structure GuardCondition where
   deriving BEq, Hashable, Repr
 
 def GuardCondition.eval (gc : GuardCondition) (clockValues : ClockMap) : Bool :=
-  match clockValues.find? gc.clock with
-  | none => false
-  | some clockValue =>
-    match gc.op with
-    | GuardOp.le => clockValue.le gc.bound
-    | GuardOp.lt => clockValue.lt gc.bound
-    | GuardOp.ge => clockValue.ge gc.bound
-    | GuardOp.gt => clockValue.gt gc.bound
+  let clockValue: Clock := match clockValues.find? gc.clock with
+  | none => { tick := 0 }
+  | some clockValue => clockValue
+  match gc.op with
+  | GuardOp.le => clockValue.le gc.bound
+  | GuardOp.lt => clockValue.lt gc.bound
+  | GuardOp.ge => clockValue.ge gc.bound
+  | GuardOp.gt => clockValue.gt gc.bound
 
 namespace Execution
   structure Entry where

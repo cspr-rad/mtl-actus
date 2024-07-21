@@ -10,6 +10,10 @@ def P : TrafficLightState := TrafficLightState.PedestrianButtonPress
 namespace TrafficEmpty
   def word : @Execution.TimedWord TrafficLightState := emptyWord TrafficLightState
   def accepts : Bool := trafficTfa.accepts _ word
+  namespace Debug
+    def acceptsIo : IO Bool := trafficTfa.acceptsDebug _ word
+  end Debug
+  #guard accepts
   def test : TestM Unit := assert accepts "The empty word failed on the traffic TFA, even though all states are accepting states"
 end TrafficEmpty
 
@@ -20,6 +24,10 @@ namespace TrafficNormal
     mkTimedLetter R 115 -- Yellow to Red
   ]
   def accepts : Bool := trafficTfa.accepts _ word
+  namespace Debug
+    def acceptsIo : IO Bool := trafficTfa.acceptsDebug _ word
+  end Debug
+  -- #guard accepts
   def test : TestM Unit := assert accepts "A run with no pedestrian button presses has failed to be accepted"
 end TrafficNormal
 
@@ -30,6 +38,10 @@ namespace TrafficPedestrian
     mkTimedLetter R 100  -- Yellow to Red
   ]
   def accepts : Bool := trafficTfa.accepts _ word
+  namespace Debug
+    def acceptsIo : IO Bool := trafficTfa.acceptsDebug _ word
+  end Debug
+  -- #guard accepts
   def test : TestM Unit := assert accepts "A run with a valid pedestrian button press has failed to be accepted"
 end TrafficPedestrian
 
@@ -40,7 +52,10 @@ namespace TrafficInvalidQuick
     mkTimedLetter R 45   -- Trying to change Yellow to Red too early
   ]
   def accepts : Bool := trafficTfa.accepts _ word
-  -- #guard !accepts
+  namespace Debug
+    def acceptsIo : IO Bool := trafficTfa.acceptsDebug _ word
+  end Debug
+  #guard !accepts
   def test : TestM Unit := assert (!accepts) "An invalid run with transitions occurring too quickly has been incorrectly accepted"
 end TrafficInvalidQuick
 
@@ -52,6 +67,10 @@ namespace TrafficEarlyPedestrian
     mkTimedLetter R 115  -- Yellow to Red
   ]
   def accepts : Bool := trafficTfa.accepts _ word
+  namespace Debug
+    def acceptsIo : IO Bool := trafficTfa.acceptsDebug _ word
+  end Debug
+  -- #guard accepts
   def test : TestM Unit := assert accepts "A run with an early pedestrian button press (which should be ignored) has failed to be accepted"
 end TrafficEarlyPedestrian
 
@@ -65,5 +84,9 @@ namespace TrafficLongCycle
     mkTimedLetter R 230   -- Yellow to Red
   ]
   def accepts : Bool := trafficTfa.accepts _ word
+  namespace Debug
+    def acceptsIo : IO Bool := trafficTfa.acceptsDebug _ word
+  end Debug
+  -- #guard accepts
   def test : TestM Unit := assert accepts "A run with two full cycles has failed to be accepted"
 end TrafficLongCycle

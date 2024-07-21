@@ -14,7 +14,7 @@ def trafficTfa : TimedFinite.TFA TrafficLightState :=
   let yellow := State.mk 1
   let green := State.mk 2
 
-  let clock := ClockVar.mk 0
+  let c0 := ClockVar.mk 0
 
   let states := Lean.HashSet.empty.insert red
                 |>.insert yellow
@@ -28,29 +28,29 @@ def trafficTfa : TimedFinite.TFA TrafficLightState :=
     { source := red
     , target := green
     , symbol := RegularTransition
-    , guard := { clock := clock, op := GuardOp.ge, bound := 60 }
-    , reset := [clock]
+    , guard := { clock := c0, op := GuardOp.ge, bound := 60 }
+    , reset := [c0]
     },
     -- Green to Yellow after 50 seconds
     { source := green
     , target := yellow
     , symbol := RegularTransition
-    , guard := { clock := clock, op := GuardOp.ge, bound := 50 }
-    , reset := [clock]
+    , guard := { clock := c0, op := GuardOp.ge, bound := 50 }
+    , reset := [c0]
     },
     -- Yellow to Red after 5 seconds
     { source := yellow
     , target := red
     , symbol := RegularTransition
-    , guard := { clock := clock, op := GuardOp.ge, bound := 5 }
-    , reset := [clock]
+    , guard := { clock := c0, op := GuardOp.ge, bound := 5 }
+    , reset := [c0]
     },
     -- Green to Yellow on pedestrian button press (if at least 30 seconds have passed)
     { source := green
     , target := yellow
     , symbol := PedestrianButtonPress
-    , guard := { clock := clock, op := GuardOp.ge, bound := 30 }
-    , reset := [clock]
+    , guard := { clock := c0, op := GuardOp.ge, bound := 30 }
+    , reset := [c0]
     }
   ]
 

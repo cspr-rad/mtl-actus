@@ -1,4 +1,4 @@
-import Lean.Data.RBMap
+import Lean.Data.AssocList
 import Lean.Data.HashSet
 import Actus.Types.Automata
 import Actus.Types.Numbers
@@ -49,46 +49,100 @@ namespace TimedFinite
             | some entry => entry.symbol == nextEntry.symbol && entry.state == nextEntry.state
       anyNextEntries && isValidFragment tfa rest
 
-  -- v_{i-1} + t_i - t_{i-1} if t_{i-1} exists and t_i otherwise
-  -- The v argument will be zero if uninitialized on the caller's side, and nonzero if otherwise initialized.
-  def valuationUpdate (v : Nat) (ti : Nat) (tIMinus1 : Option Nat) : Nat :=
-    v + ti - tIMinus1.getD 0
-   
-  def TFA.accepts' (tfa : TFA Alphabet) (word : @Execution.TimedWord Alphabet) (entryState : State) (initClockMap : ClockMap) : Bool := Id.run do
+  -- v_{i-1} + t_i - t_{i-1} if i-1 exists and t_i otherwise
+  def valuationUpdate (v : Option Clock) (ti : FiniteTimestamp) (tIMinus1 : Option FiniteTimestamp) : Nat :=
+   (v.getD 0).tick + ti.t - (tIMinus1.getD { t := 0 }).t
+
+  def Transition.isValidTransition
+      (t : Transition Alphabet)
+      (currentState : State)
+      (timedLetter : @Execution.TimedLetter Alphabet)
+      (clockValues : ClockMap) : Bool :=
+    t.source == currentState && t.symbol == timedLetter.symbol && t.guard.eval clockValues
+
+  /--
+    Assumes currentState == t.source and t.symbol == timedLetter.symbol
+  --/
+  def executeValidTransition
+      (clockValues : ClockMap)
+      (transition : Transition Alphabet)
+      (timedLetter : @Execution.TimedLetter Alphabet)
+      (prev_t : Option FiniteTimestamp)
+      : ClockMap × State := Id.run do
+    let mut clockValuesMut := clockValues.mapVal
+        fun c => let incrBy :=
+          valuationUpdate (clockValues.find? transition.guard.clock) timedLetter.time prev_t;
+          c.incr incrBy
+    for (clockVar, _) in clockValuesMut.toList.filter fun (cv, _) => transition.reset.contains cv do
+      clockValuesMut := clockValuesMut.replace clockVar 0
+
+    return (clockValuesMut, transition.target)
+
+  def TFA.accepts'
+      (tfa : TFA Alphabet)
+      (word : @Execution.TimedWord Alphabet)
+      (entryState : State)
+      (initClockMap : ClockMap)
+      : Bool := Id.run do
     let mut currentState := entryState
     let mut clockValues := initClockMap
     let mut prev_t : Option FiniteTimestamp := none
-    let mut validTransition := false
+    let mut validTransition := word.letters.length == 0
     for timedLetter in word.letters do
-      let relevantTransitions := tfa.transitions.filter (fun t => t.source == currentState ∧ t.symbol == timedLetter.symbol)
-      for transition in relevantTransitions do
-        if transition.guard.eval clockValues then
-          validTransition := true
-          let incrBy := valuationUpdate
-              (clockValues.findD transition.guard.clock 0).tick
-              timedLetter.time.t
-              (prev_t.map (fun t => t.t))
-          for (clockVar, clock) in clockValues.toList do
-            clockValues := clockValues.insert clockVar (clock.incr incrBy)
-            if transition.reset.contains clockVar then
-              clockValues := clockValues.insert clockVar 0
-          currentState := transition.target
-          break -- This means that we're doing effectively deterministic TFA
+      for transition in tfa.transitions.filter
+          fun t => t.isValidTransition _ currentState timedLetter clockValues do
+        let execution := executeValidTransition _ clockValues transition timedLetter prev_t
+        clockValues := execution.1
+        currentState := execution.2
+        validTransition := true
       prev_t := some timedLetter.time
-    return tfa.acceptingStates.contains currentState
+    return tfa.acceptingStates.contains currentState && validTransition
 
   def TFA.accepts (tfa : TFA Alphabet) (word : @Execution.TimedWord Alphabet) : Bool :=
-    let clockValues : ClockMap := Lean.RBMap.ofList (tfa.transitions.map
-        (fun transition => (transition.guard.clock, 0)));
+    let clockValues : ClockMap :=
+      (tfa.transitions.map fun transition => (transition.guard.clock, 0)).foldl
+        (fun acc (k, v) => acc.insert k v) Lean.AssocList.empty
     tfa.accepts' _ word tfa.initialState clockValues
+
+  def TFA.acceptsDebug
+      (tfa : TFA Alphabet)
+      (word : @Execution.TimedWord Alphabet)
+      : IO Bool := do
+    let clockValues : ClockMap :=
+      (tfa.transitions.map fun transition => (transition.guard.clock, 0)).foldl
+        (fun acc (k, v) => acc.insert k v) Lean.AssocList.empty
+    let mut currentState := tfa.initialState
+    let mut clockValues := clockValues
+    let mut prev_t : Option FiniteTimestamp := none
+    let mut validTransition := word.letters.length == 0
+
+    for timedLetter in word.letters do
+      IO.println s!"Processing letter..."
+      for transition in tfa.transitions do
+        IO.println s!"Processing transition: t.source==currentState: {transition.source == currentState} | t.symbol==timedLetter.symbol: {transition.symbol == timedLetter.symbol} | t.guard.eval clockValues: {transition.guard.eval clockValues}"
+      for transition in tfa.transitions.filter
+          (fun t => t.isValidTransition _ currentState timedLetter clockValues) do
+        IO.println s!"Valid transition found"
+
+        let execution := executeValidTransition _ clockValues transition timedLetter prev_t
+        clockValues := execution.1
+        currentState := execution.2
+        validTransition := true
+
+        IO.println s!"New state: {repr currentState}"
+
+      prev_t := some timedLetter.time
+      IO.println s!"Updated prev_t: {repr prev_t}"
+
+    return tfa.acceptingStates.contains currentState && validTransition
 
   structure ValidRun where
     tfa : TFA Alphabet
     word : @Execution.TimedWord Alphabet
     run : @Execution.Run Alphabet
     initialization (H : 0 < run.entries.length) : tfa.initialState = (run.entries[0]'H).l0
-    consecution1 : forall (i : Nat), true -- TODO
-    consecution2 : forall (i : Nat), true -- TODO
+    consecution1 : forall (i : Nat), exists (t : Transition Alphabet), true -- TODO
+    consecution2 : forall (i : Nat), exists (t : Transition Alphabet), true -- TODO
 
 end TimedFinite
 
@@ -135,7 +189,7 @@ namespace TimedBuchi
 
   def TBA.acceptsUntimed (tba : TBA Alphabet) (word : List Alphabet) : Bool := Id.run do
     let mut currentState := tba.initialState
-    let mut clockValues : ClockMap := Lean.RBMap.empty
+    let mut clockValues : ClockMap := Lean.AssocList.empty
     for symbol in word do
       let nextStates := step _ tba { state := currentState, symbol := symbol, clockMap := clockValues, cashFlow := none }
       match nextStates with

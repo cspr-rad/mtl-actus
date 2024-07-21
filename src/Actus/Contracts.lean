@@ -52,6 +52,7 @@ namespace PAM
 
   def contract (terms : Terms) : Contract := ip_continuous_till_mat terms and safety terms and liveness terms
 
+  -- TODO: actually generate the transitions from the terms
   def automaton (terms : Terms) : TFA Event := Id.run do
     let cl := contract_length terms
     let start := State.mk 0
