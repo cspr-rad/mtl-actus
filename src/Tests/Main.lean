@@ -22,5 +22,9 @@ def main : IO Unit := do
     printTestRun test
 
   IO.println "Debug output:"
+  let b <- TrafficInvalidQuick.Debug.acceptsIo
+  IO.println s!"TrafficInvalidQuick.Debug.acceptsIo = {b} (ought to be false)"
+ 
+  IO.println "Debug output:"
   let b <- Pam.Debug.acceptsIo
   IO.println s!"Pam.Debug.acceptsIo = {b}"

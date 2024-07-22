@@ -100,7 +100,8 @@ namespace TimedFinite
     for timedLetter in word.letters do
       for transition in tfa.transitions do
         for guard in transition.guards.conditions.toList do
-          clockValuesUpdate := incrStep _ clockValuesUpdate guard timedLetter prev_t
+          -- TODO: why does `clockValues` here pass tests but not `clockValuesUpdate`?
+          clockValuesUpdate := incrStep _ clockValues guard timedLetter prev_t
         if transition.isValidTransition _ currentState timedLetter clockValuesUpdate then
           (clockValues, currentState) := executeValidTransition _ clockValuesUpdate transition
           validTransition := true
@@ -110,7 +111,7 @@ namespace TimedFinite
 
   def TFA.accepts (tfa : TFA Alphabet) (word : @Execution.TimedWord Alphabet) : Bool :=
     let clockValues : ClockMap := tfa.transitions.foldl
-        (fun acc t => t.guards.conditions.toList.foldl
+        (fun acc t => t.guards.conditions.foldl
           (fun acc g => acc.insertOrReplace g.clock 0)
         acc)
         Lean.AssocList.empty
@@ -121,7 +122,7 @@ namespace TimedFinite
       (word : @Execution.TimedWord Alphabet)
       : IO Bool := do
     let clockValues : ClockMap := tfa.transitions.foldl
-        (fun acc t => t.guards.conditions.toList.foldl
+        (fun acc t => t.guards.conditions.foldl
           (fun acc g => acc.insertOrReplace g.clock 0)
         acc)
         Lean.AssocList.empty
@@ -136,7 +137,7 @@ namespace TimedFinite
       for transition in tfa.transitions do
         IO.println s!"▸Checking transition {repr transition}..."
         for guard in transition.guards.conditions.toList do
-          clockValuesUpdate := incrStep _ clockValuesUpdate guard timedLetter prev_t
+          clockValuesUpdate := incrStep _ clockValuesMut guard timedLetter prev_t
         if transition.isValidTransition _ currentState timedLetter clockValuesUpdate then
           IO.println s!"▸▸Valid transition found"
           (clockValuesMut, currentState) := executeValidTransition _ clockValuesUpdate transition
