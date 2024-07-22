@@ -1,4 +1,5 @@
 import Actus.Data.AssocList
+import Actus.Data.NonEmptyList
 import Actus.Types.Classes
 import Actus.Types.Numbers
 import Actus.Types.Time
@@ -47,6 +48,12 @@ structure GuardCondition where
   bound : Nat
   deriving BEq, Hashable, Repr
 
+structure GuardConditions where
+  conditions : NonEmptyList GuardCondition
+  deriving BEq, Hashable, Repr
+def GuardConditions.map (f : GuardCondition → GuardCondition) (gcs : GuardConditions) : GuardConditions :=
+  { conditions := gcs.conditions.map f }
+
 def GuardCondition.eval (gc : GuardCondition) (clockValues : ClockMap) : Bool :=
   let clockValue: Clock := match clockValues.find? gc.clock with
   | none => { tick := 0 }
@@ -56,6 +63,9 @@ def GuardCondition.eval (gc : GuardCondition) (clockValues : ClockMap) : Bool :=
   | GuardOp.lt => clockValue.lt gc.bound
   | GuardOp.ge => clockValue.ge gc.bound
   | GuardOp.gt => clockValue.gt gc.bound
+
+def GuardConditions.eval (gcs : GuardConditions) (clockValues : ClockMap) : Bool :=
+  gcs.conditions.all (fun gc => gc.eval clockValues)
 
 namespace Execution
   structure Entry where

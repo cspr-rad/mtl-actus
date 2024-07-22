@@ -65,7 +65,7 @@ namespace Beta
     let state := { idx := stateCounter }
     let states := Lean.HashSet.empty.insert state
     let transitions := match p with
-      | [[x]] => [{ source := state, target := state, symbol := x, guard := { clock := ⟨clockCounter⟩, op := .le, bound := 0 }, reset := [] }]
+      | [[x]] => [{ source := state, target := state, symbol := x, guards := GuardConditions.mk {[ { clock := ⟨clockCounter⟩, op := .le, bound := 0 } ]}, reset := [] }]
       | _ => []
     let alphabet := match p with
       | [[x]] => Lean.HashSet.empty.insert x
@@ -92,14 +92,16 @@ namespace Beta
                 source := newState,
                 target := s1,
                 symbol := x,
-                guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := []
+                guards := GuardConditions.mk {[ { clock := ⟨cc2⟩, op := .le, bound := 0 } ]},
+                reset := []
               })
             ++ node'.collectAtomicProps.toList.map
               (fun x => {
                 source := newState,
                 target := s2,
                 symbol := x,
-                guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := []
+                guards := GuardConditions.mk {[ { clock := ⟨cc2⟩, op := .le, bound := 0 } ]},
+                reset := []
               })
         let tfa := {
             states := tfa1.states.insert newState,
@@ -120,14 +122,16 @@ namespace Beta
                   source := newState,
                   target := s1,
                   symbol := x,
-                  guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := []
+                  guards := GuardConditions.mk {[ { clock := ⟨cc2⟩, op := .le, bound := 0 } ]},
+                  reset := []
                 })
               ++ node'.collectAtomicProps.toList.map
                 (fun x => {
                   source := newState,
                   target := s2,
                   symbol := x,
-                  guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := []
+                  guards := GuardConditions.mk {[ { clock := ⟨cc2⟩, op := .le, bound := 0 } ]},
+                  reset := []
                 })
         let tfa := {
             states := tfa1.states.insert newState,
@@ -149,7 +153,8 @@ namespace Beta
                 source := newState,
                 target := s1,
                 symbol := x,
-                guard := { clock := untilClock, op := .le, bound := 0 }, reset := []
+                guards := GuardConditions.mk {[ { clock := untilClock, op := .le, bound := 0 } ]},
+                reset := []
               })
               -- TODO: finish
          let tfa := {

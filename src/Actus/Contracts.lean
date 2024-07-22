@@ -69,7 +69,7 @@ namespace PAM
         source := start,
         target := interestPaid,
         symbol := Event.InterestPayment,
-        guard := { clock := c0, op := GuardOp.le, bound := mat },
+        guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.le, bound := mat } ]},
         reset := [c0]
       }
     ]
@@ -78,7 +78,7 @@ namespace PAM
         source := interestPaid,
         target := interestPaid,
         symbol := Event.InterestPayment,
-        guard := { clock := c0, op := GuardOp.le, bound := mat },
+        guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.le, bound := mat } ]},
         reset := []
       }]
     transitions := transitions.append [
@@ -86,14 +86,14 @@ namespace PAM
         source := interestPaid,
         target := principalRepaid,
         symbol := Event.PrincipalRepayment,
-        guard := { clock := c0, op := GuardOp.le, bound := mat },
+        guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.le, bound := mat } ]},
         reset := []
       },
       {
         source := principalRepaid,
         target := matured,
         symbol := Event.Maturity,
-        guard := { clock := c0, op := GuardOp.ge, bound := mat },
+        guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.ge, bound := mat } ]},
         reset := []
       }
     ]
