@@ -60,51 +60,106 @@ def TableauNode.collectAtomicProps : TableauNode T -> Lean.HashSet T
 | .since n1 _ n2 => n1.collectAtomicProps.merge n2.collectAtomicProps
 
 namespace Beta
---   def TableauNode.toTfa (node : TableauNode T) : TFA T :=
---   let rec build (node' : TableauNode T) (stateCounter : Nat) (clockCounter : Nat) : (TFA T × State × Nat × Nat) :=
---       match node' with
---       | .leaf p =>
---       let state := { idx := stateCounter }
---       let states := Lean.HashSet.empty.insert state
---       let tfa := {
---           states,
---           alphabet := Lean.HashSet.empty.insert p
---           initialState := state,
---           acceptingStates := states,
---           transitions := [],
---       }
---       (tfa, state, stateCounter + 1, clockCounter)
---       | .and n1 n2 =>
---       let (tfa1, s1, sc1, cc1) := build n1 stateCounter clockCounter
---       let (tfa2, s2, sc2, cc2) := build n2 sc1 cc1
---       let newState := { idx := sc2 }
---       let tfa := {
---           states := tfa1.states.insert newState,
---           alphabet := tfa1.alphabet.merge tfa2.alphabet,
---           initialState := newState,
---           transitions := tfa1.transitions ++ tfa2.transitions ++ [
---           { source := newState, target := s1, symbol := mtt, guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := [] },
---           { source := newState, target := s2, symbol := mtt, guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := [] }
---           ],
---           acceptingStates := tfa1.acceptingStates.merge tfa2.acceptingStates
---       }
---       (tfa, newState, sc2 + 1, cc2 + 1)
---       | .or n1 n2 =>
---       let (tfa1, s1, sc1, cc1) := build n1 stateCounter clockCounter
---       let (tfa2, s2, sc2, cc2) := build n2 sc1 cc1
---       let newState := { idx := sc2 }
---       let tfa := {
---           states := tfa1.states.insert newState,
---           alphabet := tfa1.alphabet.merge tfa2.alphabet,
---           initialState := newState,
---           transitions := tfa1.transitions ++ tfa2.transitions ++ [
---           { source := newState, target := s1, symbol := mtt, guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := [] },
---           { source := newState, target := s2, symbol := mtt, guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := [] }
---           ],
---           acceptingStates := tfa1.acceptingStates.merge tfa2.acceptingStates
---       }
---       (tfa, newState, sc2 + 1, cc2 + 1)
---       | .until n1 w n2 => sorry
---       | .since n1 w n2 => sorry
---   build node 0 0
+  def TableauNode.toTfa (node : TableauNode T) : TFA T :=
+  let rec leafHelper (p : Proposition T) (stateCounter : Nat) (clockCounter : Nat) : (TFA T × State × Nat × Nat) :=
+    let state := { idx := stateCounter }
+    let states := Lean.HashSet.empty.insert state
+    let transitions := match p with
+      | [[x]] => [{ source := state, target := state, symbol := x, guard := { clock := ⟨clockCounter⟩, op := .le, bound := 0 }, reset := [] }]
+      | _ => []
+    let alphabet := match p with
+      | [[x]] => Lean.HashSet.empty.insert x
+      | _ => Lean.HashSet.empty
+    let tfa := {
+        states,
+        alphabet,
+        initialState := state,
+        acceptingStates := states,
+        transitions,
+    }
+    (tfa, state, stateCounter + 1, clockCounter)
+  let rec build (node' : TableauNode T) (stateCounter : Nat) (clockCounter : Nat) : (TFA T × State × Nat × Nat) :=
+      match node' with
+      | .leaf p => leafHelper p stateCounter clockCounter
+      | .and n1 n2 =>
+        let (tfa1, s1, sc1, cc1) := build n1 stateCounter clockCounter
+        let (tfa2, s2, sc2, cc2) := build n2 sc1 cc1
+        let newState := { idx := sc2 }
+        let transitions := tfa1.transitions
+            ++ tfa2.transitions
+            ++ node'.collectAtomicProps.toList.map
+              (fun x => {
+                source := newState,
+                target := s1,
+                symbol := x,
+                guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := []
+              })
+            ++ node'.collectAtomicProps.toList.map
+              (fun x => {
+                source := newState,
+                target := s2,
+                symbol := x,
+                guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := []
+              })
+        let tfa := {
+            states := tfa1.states.insert newState,
+            alphabet := tfa1.alphabet.merge tfa2.alphabet,
+            initialState := newState,
+            transitions,
+            acceptingStates := tfa1.acceptingStates.intersect tfa2.acceptingStates
+        }
+        (tfa, newState, sc2 + 1, cc2 + 1)
+      | .or n1 n2 =>
+        let (tfa1, s1, sc1, cc1) := build n1 stateCounter clockCounter
+        let (tfa2, s2, sc2, cc2) := build n2 sc1 cc1
+        let newState := { idx := sc2 }
+        let transitions := tfa1.transitions
+              ++ tfa2.transitions
+              ++ node'.collectAtomicProps.toList.map
+                (fun x => {
+                  source := newState,
+                  target := s1,
+                  symbol := x,
+                  guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := []
+                })
+              ++ node'.collectAtomicProps.toList.map
+                (fun x => {
+                  source := newState,
+                  target := s2,
+                  symbol := x,
+                  guard := { clock := ⟨cc2⟩, op := .le, bound := 0 }, reset := []
+                })
+        let tfa := {
+            states := tfa1.states.insert newState,
+            alphabet := tfa1.alphabet.merge tfa2.alphabet,
+            initialState := newState,
+            transitions,
+            acceptingStates := tfa1.acceptingStates.merge tfa2.acceptingStates
+        }
+        (tfa, newState, sc2 + 1, cc2 + 1)
+      | .until n1 w n2 =>
+        let (tfa1, s1, sc1, cc1) := build n1 stateCounter clockCounter
+        let (tfa2, s2, sc2, cc2) := build n2 sc1 cc1
+        let newState := { idx := sc2 }
+        let untilClock := ⟨cc2⟩
+        let transitions := tfa1.transitions
+            ++ tfa2.transitions
+            ++ node'.collectAtomicProps.toList.map
+              (fun x => {
+                source := newState,
+                target := s1,
+                symbol := x,
+                guard := { clock := untilClock, op := .le, bound := 0 }, reset := []
+              })
+              -- TODO: finish
+         let tfa := {
+            states := tfa1.states.insert newState,
+            alphabet := tfa1.alphabet.merge tfa2.alphabet,
+            initialState := newState,
+            transitions,
+            acceptingStates := tfa1.acceptingStates
+        }
+        (tfa, newState, sc2 + 1, cc2 + 1)
+      | .since n1 w n2 => sorry
+  (build node 0 0).1
 end Beta

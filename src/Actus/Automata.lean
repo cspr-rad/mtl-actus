@@ -1,4 +1,4 @@
-import Lean.Data.HashSet
+import Actus.Data.HashSet
 import Actus.Data.AssocList
 import Actus.Types.Automata
 import Actus.Types.Numbers

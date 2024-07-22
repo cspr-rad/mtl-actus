@@ -191,12 +191,13 @@ def contract (terms : Terms) : Contract :=
 #+END_SRC
 
 Omitted here for brevity is the PAM TFA template.
-** TODO show the eval of the automaton agreeing with the spec.
+** DONE show the eval of the automaton agreeing with the word.
+/finished the code for this, have to write it up./
 * Future work
 ** Compiling general timed finite automata from MTL specs
-The algorithm to generate the automaton that corresponds to a given MTL spec is known, but we have not implemented it in the current work.
+The algorithm to generate the automaton that corresponds to a given MTL spec is known, but we have not implemented it in the current work. /write more/
 ** Implementing the remaining ACTUS taxonomy
-There is a folk wisdom among ACTUS circles that PAM is 80% of the work. However, it still remains for us to implement the other 30something contracts in the ACTUS taxonomy.
+There is a folk wisdom among ACTUS circles that PAM is 80% of the work. However, it still remains for us to implement the other 30something contracts in the ACTUS taxonomy. /write more/
 ** Assume-guarantee contracts
 Another obvious approach to finance would be assume-guarantee contracts [cite:@Girard2022AssumeGuaranteeInvariant] [cite:@Saoud2021AssumeGuaranteeContinuous]. A rough sketch of what this would look like would be showing invariants not as temporal logic specs but as contracts with preconditions and postconditions.
 ** Lustre and Kind2

@@ -1,4 +1,4 @@
-import Lean.Data.HashSet
+import Actus.Data.HashSet
 import Actus.Types.Classes
 import Actus.Types.Time
 /-!
