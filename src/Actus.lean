@@ -8,5 +8,6 @@ import «Actus».Types.Actus
 import «Actus».Types.Automata
 import «Actus».Logic
 import «Actus».Automata
+import «Actus».Compiler
 import «Actus».Contracts
 import «Actus».Etc.ComposeExamples

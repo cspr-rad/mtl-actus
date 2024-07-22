@@ -32,7 +32,6 @@ instance : OfNat Clock 0 where
   ofNat := { tick := 0 }
 
 -- a limitation: alphabet is singleton rather than `Lean.HashSet`
---
 def ClockMap : Type := Lean.AssocList ClockVar Clock
 
 inductive GuardOp : Type :=

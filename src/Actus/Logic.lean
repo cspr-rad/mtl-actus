@@ -109,6 +109,14 @@ namespace MetricTemporal
       | p S q in _ => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
   fun ψ => true = go φ (fun _ => false) ψ
 
+def Proposition.collectAtomicProps : Proposition T → Lean.HashSet T
+  | mtt => Lean.HashSet.empty
+  | [[x]] => Lean.HashSet.empty.insert x
+  | ~ φ => collectAtomicProps φ
+  | φ and ψ => (collectAtomicProps φ).merge (collectAtomicProps ψ)
+  | φ U ψ in w => (collectAtomicProps φ).merge (collectAtomicProps ψ)
+  | φ S ψ in w => (collectAtomicProps φ).merge (collectAtomicProps ψ)
+
 end MetricTemporal
 
 namespace MetricTemporalSemantics
@@ -137,6 +145,8 @@ namespace MetricTemporalSemantics
 --   holds' γ t (φ S ψ in w)
 
   notation:70 "(" γ ";" t ")⊨" φ => holds γ t φ
+
+  def equiv (φ ψ : Proposition T) : Prop := ∀ γ t, ((γ;t)⊨φ) ↔ (γ;t)⊨ψ
 
 end MetricTemporalSemantics
 
