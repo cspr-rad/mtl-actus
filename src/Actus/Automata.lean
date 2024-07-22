@@ -13,7 +13,7 @@ namespace TimedFinite
     symbol : Alphabet
     guard : GuardCondition
     reset : List ClockVar
-    deriving BEq, Hashable
+    deriving BEq, Hashable, Repr
 
   structure TFA where
     states : Lean.HashSet State
@@ -103,6 +103,7 @@ namespace TimedFinite
         if transition.isValidTransition _ currentState timedLetter clockValuesUpdate then
           (clockValues, currentState) := executeValidTransition _ clockValuesUpdate transition
           validTransition := true
+          break
       prev_t := some timedLetter.time
     return tfa.acceptingStates.contains currentState && validTransition
 
@@ -124,39 +125,31 @@ namespace TimedFinite
     let mut clockValuesUpdate := clockValues
     let mut prev_t : Option FiniteTimestamp := none
     let mut validTransition := word.letters.length == 0
-
+    IO.println s!"num transitions: {tfa.transitions.length}"
     for timedLetter in word.letters do
-      IO.println s!"Processing letter..."
-    -- for transition in tfa.transitions do
-    --   IO.println s!"▸Checking transition {repr transition.source}->{repr transition.target}..."
-    --   -- clockValuesMut := incrStep _ clockValuesMut transition timedLetter prev_t
-    --   if transition.source == currentState && transition.symbol == timedLetter.symbol then
-    --     IO.println s!"▸Potential transition found from {repr currentState} pending guard evaluation"
-    --     IO.println s!"▸▸Guard: {repr transition.guard} - {transition.guard.eval clockValuesMut}"
-    --     IO.println s!"▸▸Clock values: {repr clockValuesMut.toList}"
-         
+      IO.println s!"Processing letter {repr timedLetter}..."
       for transition in tfa.transitions do
-        IO.println s!"▸Checking transition {repr transition.source}->{repr transition.target}..."
-        -- let mut validTransition := word.letters.length == 0
+        IO.println s!"▸Checking transition {repr transition}..."
         clockValuesUpdate := incrStep _ clockValuesMut transition timedLetter prev_t
         if transition.isValidTransition _ currentState timedLetter clockValuesUpdate then
           IO.println s!"▸▸Valid transition found"
           (clockValuesMut, currentState) := executeValidTransition _ clockValuesUpdate transition
           validTransition := true
           IO.println s!"▸▸New state: {repr currentState}"
+          break
 
       prev_t := some timedLetter.time
       IO.println s!"▸Updated prev_t: {repr prev_t}"
 
     return tfa.acceptingStates.contains currentState && validTransition
 
-  structure ValidRun where
-    tfa : TFA Alphabet
-    word : @Execution.TimedWord Alphabet
-    run : @Execution.Run Alphabet
-    initialization (H : 0 < run.entries.length) : tfa.initialState = (run.entries[0]'H).l0
-    consecution1 : forall (i : Nat), exists (t : Transition Alphabet), true -- TODO
-    consecution2 : forall (i : Nat), exists (t : Transition Alphabet), true -- TODO
+--  structure ValidRun where
+--    tfa : TFA Alphabet
+--    word : @Execution.TimedWord Alphabet
+--    run : @Execution.Run Alphabet
+--    initialization (H : 0 < run.entries.length) : tfa.initialState = (run.entries[0]'H).l0
+--    consecution1 : forall (i : Nat), exists (t : Transition Alphabet), true -- TODO
+--    consecution2 : forall (i : Nat), exists (t : Transition Alphabet), true -- TODO
 
 end TimedFinite
 

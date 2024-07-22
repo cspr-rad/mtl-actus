@@ -3,7 +3,7 @@ import Actus
 inductive TrafficLightState
   | RegularTransition
   | PedestrianButtonPress
-  deriving BEq, Hashable
+  deriving BEq, Hashable, Repr
 
 instance : AtomicProp TrafficLightState where
 

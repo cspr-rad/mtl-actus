@@ -6,8 +6,8 @@ End of Q3
 ** Reviewers
 *** authors:
 - Quinn: first
+- Matt: Assistance with programming
 - Mark: leadership/oversight
-- Matt?:
 *** alpha (internal)
 - Una: Does a copy-editing pass mean authorship?
 - Ed?
@@ -15,6 +15,7 @@ End of Q3
 - Marijan
 *** beta (external)
 - Zacharya
+- Yves Hauser
 - Mo
 - Morgan
 - kind2 guys
@@ -60,6 +61,8 @@ Matt's take:
 ** Deadilne draft 1:
 - Jul 17- should be going out to alpha readers.
 * Notes Jul10 call
+Matt and Quinn will pair program
 ** Matt's notes:
 - abstract citation latex bug
 - lorem ipsum in 1.1
+* Notes Jul24 call

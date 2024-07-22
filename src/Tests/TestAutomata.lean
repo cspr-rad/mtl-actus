@@ -10,7 +10,7 @@ def clockValues1 : ClockMap := Lean.AssocList.empty.insert c0 (Clock.mk 5)
 inductive sigma : Type
 | alpha : sigma
 | beta : sigma
-deriving BEq, Hashable
+deriving BEq, Hashable, Repr
 instance : AtomicProp sigma where
 
 def s0 : State := State.mk 0

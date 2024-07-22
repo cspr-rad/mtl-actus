@@ -21,6 +21,6 @@ def main : IO Unit := do
   for test in tests do
     printTestRun test
 
-  --IO.println "Debug output:"
-  --let b <- TrafficInvalidQuick.Debug.acceptsIo
-  --IO.println s!"TrafficInvalidQuick.Debug.acceptsIo = {b}"
+  IO.println "Debug output:"
+  let b <- Pam.Debug.acceptsIo
+  IO.println s!"Pam.Debug.acceptsIo = {b}"

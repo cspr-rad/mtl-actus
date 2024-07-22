@@ -55,52 +55,57 @@ namespace PAM
   -- TODO: actually generate the transitions from the terms
   def automaton (terms : Terms) : TFA Event := Id.run do
     let cl := contract_length terms
+    let c0 := ClockVar.mk 0
+    let mat := terms.maturity.dt.toNat
     let start := State.mk 0
     let interestPaid := State.mk 1
     let principalRepaid := State.mk 2
     let matured := State.mk 3
-    let states := Lean.HashSet.empty
-    let alphabet := Lean.HashSet.empty
+    let states := Lean.HashSet.empty.insertMany [start, interestPaid, principalRepaid, matured]
+    let alphabet := Lean.HashSet.empty.insertMany [Event.InterestPayment, Event.PrincipalRepayment, Event.Maturity]
     let acceptingStates := Lean.HashSet.empty.insert matured
+    let mut transitions : List (Transition Event) := [
+      {
+        source := start,
+        target := interestPaid,
+        symbol := Event.InterestPayment,
+        guard := { clock := c0, op := GuardOp.le, bound := mat },
+        reset := [c0]
+      }
+    ]
+    for _ in [0:mat - 3] do
+      transitions := transitions.append [{
+        source := interestPaid,
+        target := interestPaid,
+        symbol := Event.InterestPayment,
+        guard := { clock := c0, op := GuardOp.le, bound := mat },
+        reset := []
+      }]
+    transitions := transitions.append [
+      {
+        source := interestPaid,
+        target := principalRepaid,
+        symbol := Event.PrincipalRepayment,
+        guard := { clock := c0, op := GuardOp.le, bound := mat },
+        reset := []
+      },
+      {
+        source := principalRepaid,
+        target := matured,
+        symbol := Event.Maturity,
+        guard := { clock := c0, op := GuardOp.ge, bound := mat },
+        reset := []
+      }
+    ]
 
-    let tfa : TFA Event := {
-      states := states.insertMany [start, interestPaid, principalRepaid, matured],
-      alphabet := alphabet.insertMany [Event.InterestPayment, Event.PrincipalRepayment, Event.Maturity],
+    return {
+      states,
+      alphabet,
       initialState := start,
-      transitions := [
-        {
-          source := start,
-          target := interestPaid,
-          symbol := Event.InterestPayment,
-          guard := { clock := ClockVar.mk 0, op := GuardOp.le, bound := terms.maturity.dt.toNat },
-          reset := [ClockVar.mk 0]
-        },
-        {
-          source := interestPaid,
-          target := interestPaid,
-          symbol := Event.InterestPayment,
-          guard := { clock := ClockVar.mk 0, op := GuardOp.le, bound := terms.maturity.dt.toNat },
-          reset := []
-        },
-        {
-          source := interestPaid,
-          target := principalRepaid,
-          symbol := Event.PrincipalRepayment,
-          guard := { clock := ClockVar.mk 0, op := GuardOp.le, bound := terms.maturity.dt.toNat },
-          reset := []
-        },
-        {
-          source := principalRepaid,
-          target := matured,
-          symbol := Event.Maturity,
-          guard := { clock := ClockVar.mk 0, op := GuardOp.ge, bound := terms.maturity.dt.toNat },
-          reset := []
-        }
-      ],
-      acceptingStates := acceptingStates
+      transitions,
+      acceptingStates
     }
 
-    return tfa
 end PAM
 
 def PAMContract : ActusContract := { terms := PAM.Terms, event := PAM.Event, event_atomicprop := PAM.event_atomicprop, contract := PAM.contract, automaton := PAM.automaton }

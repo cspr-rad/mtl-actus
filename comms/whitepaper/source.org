@@ -45,7 +45,7 @@ The seminal work on formalizing financial contracts using functional programming
 Building on this foundation, [cite:@Bahr2015CertifiedSM] developed a certified symbolic management system for multi-party financial contracts. They extended the contract language to handle multiple parties and added a formal cash-flow semantics. Crucially, they implemented the contract language and management functionality in the Coq proof assistant, allowing them to formally verify properties like causality and provide certified contract analyses and transformations. Their approach demonstrates how techniques from programming language theory and formal verification can be applied to increase trust and reliability in financial contract management software. The use of symbolic techniques, rather than purely numeric ones, opens up new possibilities for contract analysis.
 
 ** B-Method
-[?cite:@zacharya's preprint] have a preprint on ACTUS in B-Method /this may not be public enough to cite by now/
+[?cite:@zacharya's preprint] have a preprint on ACTUS in B-Method /this may not be public enough to cite by now/. Possibly remove section.
 * MTL ACTUS in Lean 4
 Lean4 serves as our implementation language for the project. Lean4 [cite:@Moura2021TheL4] is a modern, open-source theorem prover and programming language that combines powerful automated reasoning with an expressive type system. Developed by Microsoft Research and the Lean community, it excels in mathematical formalization and formal verification. For our work on financial contracts, Lean4's strong type system and ability to handle complex logical statements make it ideal for implementing and reasoning about MTL specifications. Its syntax, designed to be close to mathematical notation, allows us to clearly express and verify our MTL formalization of financial contracts.
 
@@ -77,9 +77,9 @@ inductive Proposition (T : Type) : Type where
 | until : Proposition T -> Window -> Proposition T -> Proposition T
 | since : Proposition T -> Window -> Proposition T -> Proposition T
 #+END_SRC
-With ~disjunct~ derived from ~negate~ and ~conjunct~, and the unary temporal operators given in the usual way as combinations of the binary temporal operators ~since~ ($S$) and ~until~ ($U$) with ~tru~ (the value true $T$). In particular, ~eventually~ ($\Diamond_w \phi$) is given $\top U_w \phi$ and ~always~ ($\Box_w \phi$) is given $\neg \Diamond_w \neg \phi$. We additionally have the temporal operator ~next~ ($\circ_w \phi$) from $(\neg \top) U_w \phi$, saying that $\phi$ is in the subsequent timestamp. In this MTL, indexing an operator with the window ~(Timestamp.infinity, Timestamp.infinity)~ means a degenerate case where the temporal operator simplifies to a Linear Temporal Logic (LTL) operator.
+With ~disjunct~ derived from ~negate~ and ~conjunct~, and the unary temporal operators given in the usual way as combinations of the binary temporal operators ~since~ ($S$) and ~until~ ($U$) with ~tru~ (the value true $\top$). In particular, ~eventually~ ($\Diamond_w \phi$) is given $\top U_w \phi$ and ~always~ ($\Box_w \phi$) is given $\neg \Diamond_w \neg \phi$. We additionally have the temporal operator ~next~ ($\circ_w \phi$) from $(\neg \top) U_w \phi$, saying that $\phi$ is in the subsequent timestamp. In this MTL, indexing an operator with the window ~(Timestamp.infinity, Timestamp.infinity)~ means a degenerate case where the temporal operator simplifies to a Linear Temporal Logic (LTL) operator.
 
-I use Lean's notations feature to make these operators easier to construct.
+We use Lean's notations feature to make these operators easier to construct.
 #+BEGIN_SRC lean4
 notation phi "and" psi => Proposition.conjunct phi psi
 notation phi "U" psi "in" w => Proposition.until phi w psi
