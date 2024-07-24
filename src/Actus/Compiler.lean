@@ -144,19 +144,46 @@ namespace Beta
       | .until n1 w n2 =>
         let (tfa1, s1, sc1, cc1) := build n1 stateCounter clockCounter
         let (tfa2, s2, sc2, cc2) := build n2 sc1 cc1
+        let lower := match w.2 with
+          | .t x => x.toNat
+          | _ => 0 -- TODO: handle infinity
+        let upper := match w.1 with
+          | .t x => x.toNat
+          | _ => 999999999999999999 -- TODO: handle infinity
         let newState := { idx := sc2 }
         let untilClock := ⟨cc2⟩
         let transitions := tfa1.transitions
             ++ tfa2.transitions
+            -- Transition to satisfy φ2 (right operand)
+            ++ node'.collectAtomicProps.toList.map
+              (fun x => {
+                source := newState,
+                target := s2,
+                symbol := x,
+                guards := GuardConditions.mk (
+                  {[ { clock := untilClock, op := .ge, bound := lower } ]}.append
+                  {[ { clock := untilClock, op := .le, bound := upper } ]}
+                ),
+                reset := []
+              })
+            -- Continue to satisfy φ1 (left operand)
             ++ node'.collectAtomicProps.toList.map
               (fun x => {
                 source := newState,
                 target := s1,
                 symbol := x,
-                guards := GuardConditions.mk {[ { clock := untilClock, op := .le, bound := 0 } ]},
+                guards := GuardConditions.mk {[ { clock := untilClock, op := .le, bound := upper } ]},
                 reset := []
               })
-              -- TODO: finish
+            -- Self-loop to allow time to pass
+            ++ node'.collectAtomicProps.toList.map
+              (fun x => {
+                source := newState,
+                target := newState,
+                symbol := x,
+                guards := GuardConditions.mk {[ { clock := untilClock, op := .le, bound := upper } ]},
+                reset := [untilClock]
+              })
          let tfa := {
             states := tfa1.states.insert newState,
             alphabet := tfa1.alphabet.merge tfa2.alphabet,

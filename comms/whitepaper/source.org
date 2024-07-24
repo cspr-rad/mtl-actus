@@ -1,6 +1,8 @@
 #+TITLE: Executing Finance in Metric Temporal Logic
 #+SUBTITLE: A Formal Verification Schema
 #+AUTHOR: Quinn Dougherty
+#+AUTHOR: Matthew Doty
+#+AUTHOR: Mark Greenslade
 #+EMAIL: quinn@casper.network
 #+INSTITUTE: Casper Association
 #+DATE: $\today$ DRAFT
@@ -8,8 +10,10 @@
 #+BIBLIOGRAPHY: ./b.bib
 #+CITE_EXPORT: csl ./acm.csl
 
+Casper Association[fn:1]
+
 #+BEGIN_abstract
-A financial contract is an interaction between people involving money. It is bad when there are bugs in the code executing these interactions. Additionally, it's not great when the interactions become too complicated to understand. Previously, the Algorithmic Contract Types Unified Standard (ACTUS) [cite@Brammertz2019SmartCD] attempted to tackle this twin problem by rendering interactions as atomic state machines that compose together. In this paper, we take a natural next step to Metric Temporal Logic (MTL) and take a contract to be an MTL /specification/, showing the proof of concept on the principal at maturity loan (PAM). Along the way, we implement MTL in the Lean prover. The code is available at the https url https://github.com/cspr-rad/mtl-actus.
+A financial contract is an interaction between people involving money. It is bad when there are bugs in the code executing these interactions. Additionally, it's not great when the interactions become too complicated to understand. Previously, the Algorithmic Contract Types Unified Standard (ACTUS) attempted to tackle this twin problem by rendering interactions as atomic state machines that compose together. In this paper, we take a natural next step to Metric Temporal Logic (MTL) and take a contract to be an MTL /specification/, showing the proof of concept on the principal at maturity loan (PAM). Along the way, we implement MTL in the Lean prover. The code is available at the https url https://github.com/cspr-rad/mtl-actus.
 #+END_abstract
 
 * Introduction
@@ -23,10 +27,10 @@ This methodology has the potential to significantly improve both the reliability
 ** Contributions
 The current paper shows in principle how to model finance as a reactive system for the purposes of formal verification, on an example Principal at Maturity (PAM) contract.
 
-1. Reactive System Approach: We demonstrate how financial contracts can be modeled as reactive systems, a paradigm commonly used in computer science for systems that maintain ongoing interactions with their environment. This novel perspective allows us to apply well-established formal verification techniques from the realm of reactive systems to financial contracts.
-2. Formal Verification Framework: We introduce a framework for the formal verification of financial contracts. This approach enables rigorous mathematical proof of contract properties, potentially reducing errors and ambiguities in contract execution.
-3. Principal at Maturity (PAM) Case Study: To illustrate our methodology, we provide a detailed case study of a Principal at Maturity (PAM) contract. This common financial instrument serves as an accessible yet meaningful example to showcase the power and applicability of our approach.
-4. Temporal Logic Specification: We demonstrate how to express financial contract terms and conditions using MTL. This formal language allows for precise and unambiguous specification of time-dependent behaviors, which are crucial in financial contracts.
+1. Reactive system approach: We demonstrate how financial contracts can be modeled as reactive systems, a paradigm commonly used in computer science for systems that maintain ongoing interactions with their environment. This novel perspective allows us to apply well-established formal verification techniques from the realm of reactive systems to financial contracts.
+2. Formal verification framework: We introduce a framework for the formal verification of financial contracts. This approach enables rigorous mathematical proof of contract properties, potentially reducing errors and ambiguities in contract execution.
+3. Principal at maturity (PAM) case study: To illustrate our methodology, we provide a detailed case study of a Principal at Maturity (PAM) contract. This common financial instrument serves as an accessible yet meaningful example to showcase the power and applicability of our approach.
+4. Temporal logic specification: We demonstrate how to express financial contract terms and conditions using MTL. This formal language allows for precise and unambiguous specification of time-dependent behaviors, which are crucial in financial contracts.
 * Prior Work
 ** Algorithmic Contract Types Unified Standard
 In [cite:@Brammertz2019SmartCD], the ACTUS (Algorithmic Contract Types Unified Standard) introduces a formalized approach to representing financial contracts using concepts from state machine theory. Developed by the ACTUS Financial Research Foundation, this framework models financial instruments as algorithmic contracts with well-defined states, events, and transition functions.
@@ -42,12 +46,12 @@ By applying state machine concepts to finance, ACTUS provides a rigorous mathema
 
 The seminal work on formalizing financial contracts using functional programming techniques was done by [cite:@Jones2000ComposingCA]. They introduced a combinator library for describing contracts declaratively, along with a compositional denotational semantics for valuing contracts. Their approach allowed complex contracts to be built up from simpler components in a modular way. Importantly, they separated the abstract specification of contracts from the concrete implementation details of valuation. This allowed different valuation models and numerical methods to be used without changing the contract descriptions.
 
-Building on this foundation, [cite:@Bahr2015CertifiedSM] developed a certified symbolic management system for multi-party financial contracts. They extended the contract language to handle multiple parties and added a formal cash-flow semantics. Crucially, they implemented the contract language and management functionality in the Coq proof assistant, allowing them to formally verify properties like causality and provide certified contract analyses and transformations. Their approach demonstrates how techniques from programming language theory and formal verification can be applied to increase trust and reliability in financial contract management software. The use of symbolic techniques, rather than purely numeric ones, opens up new possibilities for contract analysis.
+Building on this foundation, [cite:@Bahr2015CertifiedSM] developed a certified symbolic management system for multi-party financial contracts. They extended the contract language to handle more than two parties and added a formal cash-flow semantics. Crucially, they implemented the contract language and management functionality in the Coq proof assistant, allowing them to formally verify properties like causality and provide certified contract analyses and transformations.
 
 ** B-Method
 [?cite:@zacharya's preprint] have a preprint on ACTUS in B-Method /this may not be public enough to cite by now/. Possibly remove section.
 * MTL ACTUS in Lean 4
-Lean4 serves as our implementation language for the project. Lean4 [cite:@Moura2021TheL4] is a modern, open-source theorem prover and programming language that combines powerful automated reasoning with an expressive type system. Developed by Microsoft Research and the Lean community, it excels in mathematical formalization and formal verification. For our work on financial contracts, Lean4's strong type system and ability to handle complex logical statements make it ideal for implementing and reasoning about MTL specifications. Its syntax, designed to be close to mathematical notation, allows us to clearly express and verify our MTL formalization of financial contracts.
+Lean4 serves as our implementation language for the project. Lean4 [cite:@Moura2021TheL4] is an open-source theorem prover and programming language. Developed by Microsoft Research and the Lean community, it excels in mathematical formalization and formal verification. For our work on financial contracts, Lean4's strong type system is helpful for implementing MTL and reasoning about specifications and executions. Lean's syntax, designed to be close to mathematical notation, allows us to clearly express and verify our MTL formalization of financial contracts.
 
 ** Money and time
 Unlike ACTUS, we consider the hard part of time to be a presentational step taken later, and content ourselves with something like Unix Time [cite:@UnixTimeWiki] (a newtype of whole numbers). We do something similar with money.
@@ -63,6 +67,9 @@ structure Money where
   amount : Int
   deriving BEq, Hashable, Repr, DecidableEq
 #+END_SRC
+
+Money is best represented as an ~Int~ [cite:@Kerckhove2022Money], and you fix a precision (some degree of fractions of a cent) to place the decimal point later.
+
 ** Metric temporal logic
 Temporal logic [cite:@Pnueli1977LTL] is widely used in model checking to verify reactive systems [cite:@Baier2008PrinciplesModelChecking]. MTL is an extension of temporal logic that incorporates quantitative time constraints. It allows for the specification of time-bound properties in real-time systems, making it particularly useful for describing and verifying time-sensitive behaviors. MTL formulas can express properties such as "event A must occur within 5 time units of event B" or "condition C must hold for at least 10 time units." This makes MTL well-suited for modeling and analyzing systems where precise timing is crucial, such as financial contracts with specific execution deadlines or duration-based clauses.
 
@@ -91,7 +98,6 @@ def next (w : Window) (phi : Proposition T) : Proposition T := mtf U phi in w
 notation "{\Diamond" w "}" phi => eventually w phi
 notation "{\Box" w "}" phi => always w phi
 notation "{\circ" w "}" phi => next w phi
-
 #+END_SRC
 ** Automata
 In the context of MTL, automata play a crucial role in both theoretical analysis and practical applications. Timed automata, in particular, are closely related to MTL as they provide a way to model and verify real-time systems with quantitative timing constraints [cite:@Alur1994TimedAutomata].
@@ -114,7 +120,7 @@ structure Transition where
   source : State
   target : State
   symbol : Alphabet
-  guard : GuardCondition
+  guards : GuardConditions
   reset : List ClockVar
   deriving BEq, Hashable
 
@@ -163,7 +169,7 @@ Where $cl$ represents the time window of the whole contract length, ~(start_date
 
 Another important factor if we're going to capture PAM behavior in the spec is that interest payments are continuous until maturity
 $$
-C := \Box_{cl} (\texttt{Maturity} \to (\circ_{cl} (\texttt{InterestPayment} \lor \texttt{PrincipalRepayment}))) U_{cl} \texttt{Maturity}
+C := \Box_{cl} (\texttt{InterestPayment} \to (\circ_{cl} (\texttt{InterestPayment} \lor \texttt{PrincipalRepayment}))) U_{cl} \texttt{Maturity}
 $$
 
 So our /contract specification/ for PAM can be written
@@ -191,38 +197,28 @@ def contract (terms : Terms) : Contract :=
 #+END_SRC
 
 Omitted here for brevity is the PAM TFA template.
-** DONE show the eval of the automaton agreeing with the word.
-/finished the code for this, have to write it up./
+*** Accepting words
+A word is an element of a language induced by an automaton. In this work, we would hope to draw out words from execution traces of running contracts. Then, checking if a contract automaton /accepts/ that word amounts to verifying that the contract ran correctly. This approach allows us to model smart contract behavior as a formal language and leverage automata theory for verification. By transforming contract executions into words and defining acceptance criteria, we can systematically analyze contract correctness and detect potential violations or unexpected behaviors.
 * Future work
-** Compiling general timed finite automata from MTL specs
-The algorithm to generate the automaton that corresponds to a given MTL spec is known, but we have not implemented it in the current work. /write more/
 ** Implementing the remaining ACTUS taxonomy
-There is a folk wisdom among ACTUS circles that PAM is 80% of the work. However, it still remains for us to implement the other 30something contracts in the ACTUS taxonomy. /write more/
+There is a folk wisdom among ACTUS circles that PAM is 80% of the work. However, it still remains for us to implement the other seventeen contracts in the ACTUS taxonomy. Since the specification language is monadic in event types, we may get a clean and elegant way to compose the atomic contracts into more intricate instruments. This modular approach not only simplifies implementation but also enhances flexibility, allowing for the creation of new, custom financial products by combining existing contract types. As we expand our implementation to cover the full ACTUS taxonomy, we'll gain a more comprehensive toolkit for financial modeling and risk assessment across diverse asset classes and contract structures.
 ** Assume-guarantee contracts
-Another obvious approach to finance would be assume-guarantee contracts [cite:@Girard2022AssumeGuaranteeInvariant] [cite:@Saoud2021AssumeGuaranteeContinuous]. A rough sketch of what this would look like would be showing invariants not as temporal logic specs but as contracts with preconditions and postconditions.
+Another obvious approach to finance would be assume-guarantee contracts [cite:@Girard2022AssumeGuaranteeInvariant] [cite:@Saoud2021AssumeGuaranteeContinuous]. A rough sketch of what this would look like would be showing invariants not as temporal logic specs but as contracts with preconditions and postconditions. This would allow for clearer specification of obligations and expectations in financial transactions. Such a framework could potentially improve formal verification of financial systems and contracts, enabling better risk assessment and compliance checking.
 ** Lustre and Kind2
 A promising direction for future work is the implementation of ACTUS using the Lustre programming language [cite:@Halbwachs1992Lustre], with verification via the Kind2 tool [cite:@Champion2016Kind2]. This approach could significantly advance formal methods in financial contract modeling and verification.
 
-Lustre is a synchronous dataflow programming language designed for reactive systems that require real-time execution and high reliability. Originally developed for critical systems in domains like avionics and automotive control, Lustre's paradigm aligns well with the state-machine nature of ACTUS contracts. Of particular interest is Iowa Lustre, an extended version of the language that offers enhanced expressiveness through features like array support and an improved type system.
+Lustre is a synchronous dataflow programming language designed for reactive systems that require real-time execution and high reliability. Originally developed for critical systems in domains like avionics and automotive control, Lustre's paradigm aligns well with the state-machine nature of ACTUS contracts. Of particular interest is Iowa Lustre, an extended version of the language that offers enhanced expressiveness through features like array support and an improved type system. Kind2 is a powerful, open-source formal verification tool specifically designed for Lustre programs. It combines various model checking techniques to verify safety properties of synchronous systems. Using Kind2 and Lustre together to develop and verify critical reactive systems is an active area of research engineering.
 
-Kind2 is a powerful, open-source formal verification tool specifically designed for Lustre programs. It combines various model checking techniques to verify safety properties of synchronous systems. The synergy between Lustre and Kind2 provides a robust framework for developing and verifying critical reactive systems.
 In the context of financial contracts, we envision the following steps:
 
 1. ACTUS in Lustre: Implement the core ACTUS contract types as Lustre modules. Each contract type would be represented as a synchronous dataflow program, with its state transitions and temporal behaviors explicitly modeled.
-2. Formal Specification: Express contract properties, regulatory requirements, and desired behaviors as formal specifications in Lustre's assertion language.
-3. Verification with Kind2: Utilize Kind2 to formally verify the Lustre implementation against these specifications. This could include proving the absence of certain types of errors, ensuring compliance with regulatory requirements, and verifying key properties of contract behavior.
-4. Composition and Scalability: Leverage Lustre's modularity to compose complex financial instruments from simpler components, and investigate the scalability of this approach to large-scale financial systems.
-5. Real-time Analysis: Exploit Lustre's real-time capabilities to model and analyze time-critical aspects of financial contracts, such as payment deadlines or market-responsive behaviors.
+2. Formal specification: express contract properties, regulatory requirements, and desired behaviors as formal specifications in Lustre's assertion language.
+3. Verification with Kind2: utilize Kind2 to formally verify the Lustre implementation against these specifications. This could include proving the absence of certain types of errors, ensuring compliance with regulatory requirements, and verifying key properties of contract behavior.
+4. Composition and scalability: Leverage Lustre's modularity to compose complex financial instruments from simpler components, and investigate the scalability of this approach to large-scale financial systems.
+5. Real-time analysis: exploit Lustre's real-time capabilities to model and analyze time-critical aspects of financial contracts, such as payment deadlines or market-responsive behaviors.
 
-This approach could yield several benefits:
+Implementing ACTUS using Lustre and verifying it with Kind2 represents a promising frontier in formal methods for financial contract modeling. This approach could significantly enhance the reliability and trustworthiness of financial software systems by leveraging the strengths of synchronous programming and advanced verification techniques. By rigorously formalizing contract behaviors, ensuring compliance with specifications, and enabling scalable composition of complex financial instruments, this direction of research has the potential to revolutionize how we design, verify, and reason about financial contracts in an increasingly complex and interconnected global economy.
 
-A formally verified implementation of ACTUS, potentially increasing trust and reliability in financial contract systems.
-New methodologies for designing and analyzing financial contracts using formal methods.
-Improved tools for regulatory compliance and risk assessment in the financial sector.
-A bridge between the financial modeling and formal methods communities, fostering interdisciplinary collaboration.
-
-Challenges to address would include managing the learning curve for financial experts unfamiliar with Lustre, and potentially extending Lustre or developing domain-specific libraries to fully capture complex financial concepts.
-By pursuing this direction, we aim to further advance the application of formal methods to financial contracts, potentially leading to more robust, verifiable, and transparent financial systems.
 * Conclusion
 In this paper, we have taken a preliminary step towards addressing two persistent challenges in financial technology: the risk of code bugs in contract execution and the increasing complexity of financial instruments. While the Algorithmic Contract Types Unified Standard (ACTUS) previously attempted to address these issues by modeling financial interactions as composable state machines, we recognized the potential for further improvement.
 
@@ -234,5 +230,10 @@ Our implementation of MTL in Lean, while functional for our example, is limited 
 Looking ahead, this work opens up several avenues for future research. These include extending the MTL framework to cover a broader range of financial instruments, investigating the scalability of this approach to more complex financial ecosystems, and exploring how this method might integrate with existing financial systems and regulatory frameworks.
 
 In conclusion, while our work on applying MTL to financial contracts shows promise, it is best viewed as a starting point for further research rather than a fully developed solution. We hope that this initial exploration will stimulate further discussion and investigation at the intersection of formal methods and financial technology, potentially contributing to the development of more reliable and interpretable financial systems in the future.
+
 * Bibliography
 #+PRINT_BIBLIOGRAPHY:
+
+* Footnotes
+
+[fn:1] Corresponding author: quinn@casper.network
