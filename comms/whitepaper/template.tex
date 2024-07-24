@@ -1,0 +1,52 @@
+% !TEX TS-program = xelatex
+% !TEX encoding = UTF-8 Unicode
+
+% -----------------
+% START OF PREAMBLE
+% -----------------
+\documentclass{article}
+
+
+% Packages
+\usepackage{amssymb}
+\usepackage[setpagesize=false,
+            unicode=false,
+            colorlinks=true,  % default was =false
+            linkcolor=blue,
+            urlcolor=blue]{hyperref}
+
+
+
+% Required for syntax highlighting
+$highlighting-macros$
+
+
+% Make links footnotes instead of hotlinks
+\renewcommand{\href}[2]{#2\footnote{\url{#1}}}
+
+
+% adaptation to the upgrade of Pandoc, otherwise error would occur.
+$if(csl-refs)$
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newenvironment{CSLReferences}%
+  {$if(csl-hanging-indent)$\setlength{\parindent}{0pt}%
+  \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces$endif$}%
+  {\par}
+$endif$
+\newenvironment{CSLLeftMargin}
+\newenvironment{CSLRightInline}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% -----------------
+%  END OF PREAMBLE
+% -----------------
+\begin{document}
+
+\input{cover}
+
+$body$
+
+\end{document}

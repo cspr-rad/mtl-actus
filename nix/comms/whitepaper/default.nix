@@ -7,7 +7,14 @@ pkgs.stdenv.mkDerivation {
   ];
   src = "${self}/comms/whitepaper";
   buildPhase = ''
-    pandoc -t latex -f org --citeproc --csl $src/acm.csl --number-sections $src/source.org -o whitepaper.pdf
+    export FONTCONFIG_PATH=$src
+    pandoc \
+           --from org \
+           --to latex \
+           --csl $src/acm.csl \
+           --number-sections \
+           --citeproc \
+           $src/source.org --out whitepaper.pdf
   '';
   installPhase = ''
     mkdir -p $out
