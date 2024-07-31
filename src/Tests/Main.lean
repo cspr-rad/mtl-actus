@@ -1,4 +1,4 @@
-import Actus
+-- import Actus
 import Tests
 
 def tests : List (TestM Unit) := [
@@ -15,6 +15,8 @@ def tests : List (TestM Unit) := [
   TrafficLongCycle.test,
   Pam.test,
 ]
+
+-- def clock_map_lookup := name_test ClockMapLookup.test
 
 def main : IO Unit := do
   IO.println s!"Lean4 test runner about to run {tests.length} tests"

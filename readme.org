@@ -1,0 +1,16 @@
+#+title: MTL ACTUS
+
+* Abstract
+A financial contract is an interaction between people involving money. Complex interactions among these parties may result in misunderstandings and errors, potentially leading to financial losses for all involved—an undesirable outcome. Previously, the Algorithmic Contract Types Unified Standard (ACTUS) attempted to tackle this twin problem by rendering interactions as atomic state machines that compose together. In this paper, we take a natural next step to Metric Temporal Logic (MTL) and take a contract to be an MTL /specification/, showing the proof of concept on the principal at maturity loan (PAM). Along the way, we implement MTL in the Lean prover. The code is available at the https url https://github.com/cspr-rad/mtl-actus.
+
+* Build (~nix~ flakes)
+** Lean codebase
+#+BEGIN_SRC
+cd src
+direnv allow
+lake exe test
+#+END_SRC
+** whitepaper
+#+BEGIN_SRC
+nix build .#whitepaper
+#+END_SRC

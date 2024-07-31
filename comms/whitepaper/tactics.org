@@ -66,3 +66,25 @@ Matt and Quinn will pair program
 - abstract citation latex bug
 - lorem ipsum in 1.1
 * Notes Jul24 call
+
+* Jul31
+** Marijan's feedback
+#+BEGIN_QUOTE
+
+01:53
+Paper review feedback:
+
++Don't forget to add a README and a link to the published paper.+
+In the Abstract:
++The second and third sentence read awkward. I would go with something like "Complicated interactions between these parties could lead to misinterpretations and errors, an error while executing these interactions could lead to financial damage for the involved parties, which is obviously undesireable."+
++The code is available at the https url https://github.com/cspr-rad/mtl-actus.+
+In the Introduction
++Add a short explanation what the limitiations of the current ACTUS approach are (if you think that is appropriate, I would be curious as a first time reader)+
+Prior Work - 2.3 B-Method: citation is broken.
+3.2 MTL
++I feel like 1-2 sentences are missing motivating the proposition code+
++3.3 Automata - 1-2 sentences for the code, what the respective attributes of the types represent. e.g. what are resets for transitions.+
++3.4.1 The first sentence needs to be rewritten I think.+
+3.4.1 In the ip_continuous_till_mat code the box (always) is not rendered properly
+Havent looked for punctuation or grammar.
+#+END_QUOTE
