@@ -11,5 +11,6 @@ import «Actus».Types.Automata
 import «Actus».Logic
 import «Actus».Automata
 import «Actus».Compiler
+import «Actus».Compiler2
 import «Actus».Contracts
 import «Actus».Etc.ComposeExamples

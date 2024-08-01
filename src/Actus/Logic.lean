@@ -88,34 +88,34 @@ namespace MetricTemporal
 
   -- I think this needs both each subformula and it's negation, not just negations.
   def Proposition.closure (φ : Proposition T) : Proposition T -> Prop :=
-  let rec go (φ : Proposition T) (acc : Proposition T -> Bool) : Proposition T -> Bool :=
-    if acc φ then
-      acc
-    else
-      let acc' := fun ψ => acc ψ || ψ == φ
-      let acc' := match φ with
+    let rec go (φ : Proposition T) (acc : Proposition T -> Bool) : Proposition T -> Bool :=
+      if acc φ then
+        acc
+      else
+        let acc' := fun ψ => acc ψ || ψ == φ
+        let acc' := match φ with
+          | mt_t => acc'
+          | [[_]] => acc'
+          | ~ p => go p acc'
+          | p and q => go p (go q acc')
+          | p U q in w => go p (go q acc')
+          | p S q in w => go p (go q acc')
+        match φ with
         | mt_t => acc'
         | [[_]] => acc'
-        | ~ p => go p acc'
-        | p and q => go p (go q acc')
-        | p U q in w => go p (go q acc')
-        | p S q in w => go p (go q acc')
-      match φ with
-      | mt_t => acc'
-      | [[_]] => acc'
-      | ~ p => acc'
-      | p and q => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
-      | p U q in _ => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
-      | p S q in _ => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
-  fun ψ => true = go φ (fun _ => false) ψ
+        | ~ p => acc'
+        | p and q => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
+        | p U q in _ => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
+        | p S q in _ => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
+    fun ψ => true = go φ (fun _ => false) ψ
 
-def Proposition.collectAtomicProps : Proposition T → Lean.HashSet T
-  | mtt => Lean.HashSet.empty
-  | [[x]] => Lean.HashSet.empty.insert x
-  | ~ φ => collectAtomicProps φ
-  | φ and ψ => (collectAtomicProps φ).merge (collectAtomicProps ψ)
-  | φ U ψ in w => (collectAtomicProps φ).merge (collectAtomicProps ψ)
-  | φ S ψ in w => (collectAtomicProps φ).merge (collectAtomicProps ψ)
+  def Proposition.collectAtomicProps : Proposition T → Lean.HashSet T
+    | mtt => Lean.HashSet.empty
+    | [[x]] => Lean.HashSet.empty.insert x
+    | ~ φ => collectAtomicProps φ
+    | φ and ψ => (collectAtomicProps φ).merge (collectAtomicProps ψ)
+    | φ U ψ in w => (collectAtomicProps φ).merge (collectAtomicProps ψ)
+    | φ S ψ in w => (collectAtomicProps φ).merge (collectAtomicProps ψ)
 
 end MetricTemporal
 

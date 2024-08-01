@@ -49,7 +49,7 @@ The seminal work on formalizing financial contracts using functional programming
 Building on this foundation, [cite:@Bahr2015CertifiedSM] developed a certified symbolic management system for multi-party financial contracts. They extended the contract language to handle more than two parties and added a formal cash-flow semantics. Crucially, they implemented the contract language and management functionality in the Coq proof assistant, allowing them to formally verify properties like causality and provide certified contract analyses and transformations.
 
 ** B-Method
-[?cite:@zacharya's preprint] have a preprint on ACTUS in B-Method /this may not be public enough to cite by now/. /Possibly remove section/.
+[?cite:@zakarya's preprint] have a preprint on ACTUS in B-Method /this may not be public enough to cite by now/. /Possibly remove section/.
 * MTL ACTUS in Lean 4
 Lean4 serves as our implementation language for the project. Lean4 [cite:@Moura2021TheL4] is an open-source theorem prover and programming language. Developed by Microsoft Research and the Lean community, it excels in mathematical formalization and formal verification. For our work on financial contracts, Lean4's strong type system is helpful for implementing MTL and reasoning about specifications and executions. Lean's syntax, designed to be close to mathematical notation, allows us to clearly express and verify our MTL formalization of financial contracts.
 

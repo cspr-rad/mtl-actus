@@ -14,11 +14,11 @@ End of Q3
 - Avi
 - Marijan
 *** beta (external)
-- Zacharya
-- Yves Hauser
+- +Zacharya+
+- +Yves Hauser+
 - Mo
-- Morgan
-- kind2 guys
+- +Morgan+
+- +kind2 guys+
 - EPFL/ETH folks from January
 - Anthony Hart
 ** Who is the audience?
