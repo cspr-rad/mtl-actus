@@ -10,7 +10,7 @@ namespace TimedFinite
   structure Transition where
     source : State
     target : State
-    symbol : Alphabet
+    symbol : List Alphabet
     guards : GuardConditions
     reset : List ClockVar
     deriving BEq, Hashable, Repr
@@ -24,7 +24,7 @@ namespace TimedFinite
 
   def TFA.step (tfa : TFA Alphabet) (entry : @Execution.Entry Alphabet) : @Execution.Fragment Alphabet :=
     tfa.transitions.toList.filterMap fun transition =>
-      if transition.source == entry.state && transition.symbol == entry.symbol && transition.guards.eval entry.clockMap then
+      if transition.source == entry.state && transition.symbol.contains entry.symbol && transition.guards.eval entry.clockMap then
         let newClockValues := transition.reset.foldl (fun acc cv => acc.insert cv 0) entry.clockMap
         some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues, cashFlow := none}
       else
@@ -32,7 +32,7 @@ namespace TimedFinite
 
   def TFA.stepWithCashFlow (tfa : TFA Alphabet) (entry : @Execution.Entry Alphabet) (cashFlow : Alphabet -> Money) : @Execution.Fragment Alphabet :=
     tfa.transitions.toList.filterMap fun transition =>
-      if transition.source == entry.state && transition.symbol == entry.symbol && transition.guards.eval entry.clockMap then
+      if transition.source == entry.state && transition.symbol.contains entry.symbol && transition.guards.eval entry.clockMap then
         let newClockValues := transition.reset.foldl (fun acc cv => acc.insert cv 0) entry.clockMap
         some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues, cashFlow := cashFlow entry.symbol }
       else
@@ -58,7 +58,7 @@ namespace TimedFinite
       (currentState : State)
       (timedLetter : @Execution.TimedLetter Alphabet)
       (clockValues : ClockMap) : Bool :=
-    t.source == currentState && t.symbol == timedLetter.symbol && t.guards.eval clockValues
+    t.source == currentState && t.symbol.contains timedLetter.symbol && t.guards.eval clockValues
 
   def incrStep
       (clockValues : ClockMap)

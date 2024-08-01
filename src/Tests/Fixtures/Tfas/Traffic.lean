@@ -27,28 +27,28 @@ def trafficTfa : TimedFinite.TFA TrafficLightState :=
     -- Red to Green after 60 seconds
     { source := red
     , target := green
-    , symbol := RegularTransition
+    , symbol := [RegularTransition]
     , guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.ge, bound := 60 } ]}
     , reset := [c0]
     },
     -- Green to Yellow after 50 seconds
     { source := green
     , target := yellow
-    , symbol := RegularTransition
+    , symbol := [RegularTransition]
     , guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.ge, bound := 50 } ]}
     , reset := [c0]
     },
     -- Yellow to Red after 5 seconds
     { source := yellow
     , target := red
-    , symbol := RegularTransition
+    , symbol := [RegularTransition]
     , guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.ge, bound := 5 } ]}
     , reset := [c0]
     },
     -- Green to Yellow on pedestrian button press (if at least 30 seconds have passed)
     { source := green
     , target := yellow
-    , symbol := PedestrianButtonPress
+    , symbol := [PedestrianButtonPress]
     , guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.ge, bound := 30 } ]}
     , reset := [c0]
     }

@@ -19,7 +19,7 @@ def s1 : State := State.mk 1
 def transition1 : @TimedFinite.Transition sigma := {
   source := s0,
   target := s1,
-  symbol := sigma.alpha,
+  symbol := [sigma.alpha],
   guards := GuardConditions.mk {[ { clock := c1, op := GuardOp.lt, bound := 10 } ]},
   reset := []
 }
@@ -29,7 +29,7 @@ def prev_t1 : Option FiniteTimestamp := none
 def transition2 : @TimedFinite.Transition sigma := {
   source := s1,
   target := State.mk 2,
-  symbol := sigma.beta,
+  symbol := [sigma.beta],
   guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.ge, bound := 4 } ]},
   reset := [c0]
 }

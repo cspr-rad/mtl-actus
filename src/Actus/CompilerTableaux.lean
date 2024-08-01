@@ -53,7 +53,7 @@ namespace Beta
     let state := { idx := stateCounter }
     let states := Lean.HashSet.empty.insert state
     let transitions := match p with
-      | [[x]] => Lean.HashSet.empty.insert { source := state, target := state, symbol := x, guards := GuardConditions.mk {[ { clock := ⟨clockCounter⟩, op := .le, bound := 0 } ]}, reset := [] }
+      | [[x]] => Lean.HashSet.empty.insert { source := state, target := state, symbol := [x], guards := GuardConditions.mk {[ { clock := ⟨clockCounter⟩, op := .le, bound := 0 } ]}, reset := [] }
       | _ => Lean.HashSet.empty
     let alphabet := match p with
       | [[x]] => Lean.HashSet.empty.insert x
@@ -79,7 +79,7 @@ namespace Beta
               (fun x => {
                 source := newState,
                 target := s1,
-                symbol := x,
+                symbol := [x],
                 guards := GuardConditions.mk {[ { clock := ⟨cc2⟩, op := .le, bound := 0 } ]},
                 reset := []
               })
@@ -87,7 +87,7 @@ namespace Beta
               (fun x => {
                 source := newState,
                 target := s2,
-                symbol := x,
+                symbol := [x],
                 guards := GuardConditions.mk {[ { clock := ⟨cc2⟩, op := .le, bound := 0 } ]},
                 reset := []
               })
@@ -109,7 +109,7 @@ namespace Beta
                 (fun x => {
                   source := newState,
                   target := s1,
-                  symbol := x,
+                  symbol := [x],
                   guards := GuardConditions.mk {[ { clock := ⟨cc2⟩, op := .le, bound := 0 } ]},
                   reset := []
                 })
@@ -117,7 +117,7 @@ namespace Beta
                 (fun x => {
                   source := newState,
                   target := s2,
-                  symbol := x,
+                  symbol := [x],
                   guards := GuardConditions.mk {[ { clock := ⟨cc2⟩, op := .le, bound := 0 } ]},
                   reset := []
                 })
@@ -147,7 +147,7 @@ namespace Beta
               (fun x => {
                 source := newState,
                 target := s2,
-                symbol := x,
+                symbol := [x],
                 guards := GuardConditions.mk (
                   {[ { clock := untilClock, op := .ge, bound := lower } ]}.append
                   {[ { clock := untilClock, op := .le, bound := upper } ]}
@@ -159,7 +159,7 @@ namespace Beta
               (fun x => {
                 source := newState,
                 target := s1,
-                symbol := x,
+                symbol := [x],
                 guards := GuardConditions.mk {[ { clock := untilClock, op := .le, bound := upper } ]},
                 reset := []
               })
@@ -168,7 +168,7 @@ namespace Beta
               (fun x => {
                 source := newState,
                 target := newState,
-                symbol := x,
+                symbol := [x],
                 guards := GuardConditions.mk {[ { clock := untilClock, op := .le, bound := upper } ]},
                 reset := [untilClock]
               })
