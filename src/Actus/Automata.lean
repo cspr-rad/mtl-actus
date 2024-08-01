@@ -19,11 +19,11 @@ namespace TimedFinite
     states : Lean.HashSet State
     alphabet : Lean.HashSet Alphabet
     initialState : State
-    transitions : List (Transition Alphabet)
+    transitions : Lean.HashSet (Transition Alphabet)
     acceptingStates : Lean.HashSet State
 
   def TFA.step (tfa : TFA Alphabet) (entry : @Execution.Entry Alphabet) : @Execution.Fragment Alphabet :=
-    tfa.transitions.filterMap fun transition =>
+    tfa.transitions.toList.filterMap fun transition =>
       if transition.source == entry.state && transition.symbol == entry.symbol && transition.guards.eval entry.clockMap then
         let newClockValues := transition.reset.foldl (fun acc cv => acc.insert cv 0) entry.clockMap
         some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues, cashFlow := none}
@@ -31,7 +31,7 @@ namespace TimedFinite
         none
 
   def TFA.stepWithCashFlow (tfa : TFA Alphabet) (entry : @Execution.Entry Alphabet) (cashFlow : Alphabet -> Money) : @Execution.Fragment Alphabet :=
-    tfa.transitions.filterMap fun transition =>
+    tfa.transitions.toList.filterMap fun transition =>
       if transition.source == entry.state && transition.symbol == entry.symbol && transition.guards.eval entry.clockMap then
         let newClockValues := transition.reset.foldl (fun acc cv => acc.insert cv 0) entry.clockMap
         some { state := transition.target, symbol := entry.symbol, clockMap := newClockValues, cashFlow := cashFlow entry.symbol }
@@ -110,7 +110,7 @@ namespace TimedFinite
     return tfa.acceptingStates.contains currentState && validTransition
 
   def TFA.accepts (tfa : TFA Alphabet) (word : @Execution.TimedWord Alphabet) : Bool :=
-    let clockValues : ClockMap := tfa.transitions.foldl
+    let clockValues : ClockMap := tfa.transitions.toList.foldl
         (fun acc t => t.guards.conditions.foldl
           (fun acc g => acc.insertOrReplace g.clock 0)
         acc)
@@ -121,7 +121,7 @@ namespace TimedFinite
       (tfa : TFA Alphabet)
       (word : @Execution.TimedWord Alphabet)
       : IO Bool := do
-    let clockValues : ClockMap := tfa.transitions.foldl
+    let clockValues : ClockMap := tfa.transitions.toList.foldl
         (fun acc t => t.guards.conditions.foldl
           (fun acc g => acc.insertOrReplace g.clock 0)
         acc)
@@ -131,7 +131,7 @@ namespace TimedFinite
     let mut clockValuesUpdate := clockValues
     let mut prev_t : Option FiniteTimestamp := none
     let mut validTransition := word.letters.length == 0
-    IO.println s!"num transitions: {tfa.transitions.length}"
+    IO.println s!"num transitions: {tfa.transitions.toList.length}"
     for timedLetter in word.letters do
       IO.println s!"Processing letter {repr timedLetter}..."
       for transition in tfa.transitions do

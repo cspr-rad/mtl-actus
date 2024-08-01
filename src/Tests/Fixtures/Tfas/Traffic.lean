@@ -23,7 +23,7 @@ def trafficTfa : TimedFinite.TFA TrafficLightState :=
   let alphabet := Lean.HashSet.empty.insert RegularTransition  -- Regular transition
                   |>.insert PedestrianButtonPress  -- Pedestrian button press
 
-  let transitions := [
+  let transitions := Lean.HashSet.empty.insertMany [
     -- Red to Green after 60 seconds
     { source := red
     , target := green

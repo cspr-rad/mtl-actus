@@ -64,7 +64,7 @@ namespace PAM
     let states := Lean.HashSet.empty.insertMany [start, interestPaid, principalRepaid, matured]
     let alphabet := Lean.HashSet.empty.insertMany [Event.InterestPayment, Event.PrincipalRepayment, Event.Maturity]
     let acceptingStates := Lean.HashSet.empty.insert matured
-    let mut transitions : List (Transition Event) := [
+    let mut transitions : Lean.HashSet (Transition Event) := Lean.HashSet.empty.insert
       {
         source := start,
         target := interestPaid,
@@ -72,16 +72,15 @@ namespace PAM
         guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.le, bound := mat } ]},
         reset := [c0]
       }
-    ]
     for _ in [0:mat - 3] do
-      transitions := transitions.append [{
+      transitions := transitions.insert {
         source := interestPaid,
         target := interestPaid,
         symbol := Event.InterestPayment,
         guards := GuardConditions.mk {[ { clock := c0, op := GuardOp.le, bound := mat } ]},
         reset := []
-      }]
-    transitions := transitions.append [
+      }
+    transitions := transitions.insertMany [
       {
         source := interestPaid,
         target := principalRepaid,
