@@ -10,6 +10,6 @@ lean_lib «Actus» where
 lean_lib «Tests» where
   -- add library configuration options here
 
-@[default_target]
+@[test_driver]
 lean_exe «test» where
   root := `Tests.Main
