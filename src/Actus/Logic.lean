@@ -50,6 +50,11 @@ namespace MetricTemporal
   def iff (φ ψ : Proposition T) : Proposition T := (φ implies ψ) and (ψ implies φ)
   notation φ "iff" ψ => iff φ ψ
 
+  def Proposition.dualUntil (φ : Proposition T) (w : Window) (ψ : Proposition T): Proposition T := ~ (~ φ U ~ ψ in w)
+  def Proposition.dualSince (φ : Proposition T) (w : Window) (ψ : Proposition T): Proposition T := ~ (~ φ S ~ ψ in w)
+  notation φ "Ũ" ψ "in" w => Proposition.dualUntil φ w ψ
+  notation φ "(~S)" ψ "in" w => Proposition.dualSince φ w ψ -- Had a hard time getting tilde to work here.
+
   def Proposition.map (f : α -> β) : Proposition α -> Proposition β
   | mtt => mtt
   | [[x]] => [[f x]]
@@ -86,28 +91,28 @@ namespace MetricTemporal
   instance : Monad Proposition where
     bind := Proposition.bind
 
-  -- I think this needs both each subformula and it's negation, not just negations.
-  def Proposition.closure (φ : Proposition T) : Proposition T -> Prop :=
-    let rec go (φ : Proposition T) (acc : Proposition T -> Bool) : Proposition T -> Bool :=
-      if acc φ then
-        acc
-      else
-        let acc' := fun ψ => acc ψ || ψ == φ
-        let acc' := match φ with
-          | mt_t => acc'
-          | [[_]] => acc'
-          | ~ p => go p acc'
-          | p and q => go p (go q acc')
-          | p U q in w => go p (go q acc')
-          | p S q in w => go p (go q acc')
-        match φ with
-        | mt_t => acc'
-        | [[_]] => acc'
-        | ~ p => acc'
-        | p and q => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
-        | p U q in _ => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
-        | p S q in _ => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
-    fun ψ => true = go φ (fun _ => false) ψ
+--  -- I think this needs both each subformula and it's negation, not just negations.
+--  def Proposition.closure (φ : Proposition T) : Proposition T -> Prop :=
+--    let rec go (φ : Proposition T) (acc : Proposition T -> Bool) : Proposition T -> Bool :=
+--      if acc φ then
+--        acc
+--      else
+--        let acc' := fun ψ => acc ψ || ψ == φ
+--        let acc' := match φ with
+--          | mt_t => acc'
+--          | [[_]] => acc'
+--          | ~ p => go p acc'
+--          | p and q => go p (go q acc')
+--          | p U q in w => go p (go q acc')
+--          | p S q in w => go p (go q acc')
+--        match φ with
+--        | mt_t => acc'
+--        | [[_]] => acc'
+--        | ~ p => acc'
+--        | p and q => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
+--        | p U q in _ => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
+--        | p S q in _ => fun ψ => acc' ψ || (ψ == ~ p) || ψ == ~ q
+--    fun ψ => true = go φ (fun _ => false) ψ
 
   def Proposition.collectAtomicProps : Proposition T → Lean.HashSet T
     | mtt => Lean.HashSet.empty
@@ -116,7 +121,6 @@ namespace MetricTemporal
     | φ and ψ => (collectAtomicProps φ).merge (collectAtomicProps ψ)
     | φ U ψ in w => (collectAtomicProps φ).merge (collectAtomicProps ψ)
     | φ S ψ in w => (collectAtomicProps φ).merge (collectAtomicProps ψ)
-
 end MetricTemporal
 
 namespace MetricTemporalSemantics

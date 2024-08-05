@@ -1,3 +1,4 @@
+-- Defunct and abandoned approach.
 import Actus.Logic
 import Actus.Automata
 
