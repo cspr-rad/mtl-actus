@@ -8,7 +8,7 @@ A financial contract is an interaction between people involving money. Complex i
 #+BEGIN_SRC
 cd src
 direnv allow
-lake exe test
+lake test
 #+END_SRC
 ** whitepaper
 #+BEGIN_SRC

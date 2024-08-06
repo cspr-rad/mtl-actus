@@ -14,7 +14,7 @@ namespace MetricTemporal
   | conjunct : Proposition T -> Proposition T -> Proposition T
   | until : Proposition T -> Window -> Proposition T -> Proposition T
   | since : Proposition T -> Window -> Proposition T -> Proposition T
-  deriving Hashable, BEq, Repr
+  deriving Hashable, BEq, Repr, DecidableEq
 
   instance : Inhabited (Proposition T) where
     default := Proposition.negate Proposition.mt_t

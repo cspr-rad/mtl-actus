@@ -90,7 +90,7 @@ def FiniteTimestamp.map (f : Nat -> Nat) (ft : FiniteTimestamp) : FiniteTimestam
 
 namespace Interval
   def T : Type := (Timestamp × Timestamp)
-  deriving  BEq, Hashable, Repr
+  deriving  BEq, Hashable, Repr, DecidableEq
 
   def T.map (f : Timestamp -> Timestamp) (i : T) : T :=
     (f i.1, f i.2)
@@ -126,4 +126,4 @@ namespace Interval
 
 end Interval
 
-def Window : Type := Interval.T deriving BEq, Hashable, Repr
+def Window : Type := Interval.T deriving BEq, Hashable, Repr, DecidableEq

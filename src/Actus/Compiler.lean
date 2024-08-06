@@ -25,8 +25,41 @@ inductive NegationNormalForm : Proposition T -> Prop where
 | atom (x : T) : NegationNormalForm [[x]]
 | neg_atom (x : T) : NegationNormalForm (~ [[x]])
 | and (φ ψ : Proposition T) : NegationNormalForm φ -> NegationNormalForm ψ -> NegationNormalForm (φ and ψ)
-| until (φ : Proposition T) (w : Window) (ψ : Proposition T) : NegationNormalForm φ -> NegationNormalForm ψ -> NegationNormalForm (φ U ψ in w)
-| since (φ : Proposition T) (w : Window) (ψ : Proposition T) : NegationNormalForm φ -> NegationNormalForm ψ -> NegationNormalForm (φ S ψ in w)
+| until (φ : Proposition T) (w : Window) (ψ : Proposition T) : NegationNormalForm φ ->
+    NegationNormalForm ψ ->
+    NegationNormalForm (φ U ψ in w)
+| since (φ : Proposition T) (w : Window) (ψ : Proposition T) : NegationNormalForm φ ->
+    NegationNormalForm ψ ->
+    NegationNormalForm (φ S ψ in w)
+
+def Proposition.isNNF (φ : Proposition T) : Bool :=
+  match φ with
+  | mtt => true
+  | [[x]] => true
+  | ~ [[x]] => true
+  | ~ φ' => false
+  | φ' and ψ' => isNNF φ' && isNNF ψ'
+  | φ' U ψ' in w => isNNF φ' && isNNF ψ'
+  | φ' S ψ' in w => isNNF φ' && isNNF ψ'
+
+theorem Proposition.isNNF_iff (φ : Proposition T) : isNNF φ = true ↔ NegationNormalForm φ := by
+  apply Iff.intro <;> intro H
+  · induction φ
+    · constructor
+    · constructor
+    · sorry
+    · simp [isNNF] at H
+      rcases H with ⟨H1, H2⟩
+      -- specialize a_ih1 H1
+      -- specialize a_ih H2
+      -- constructor
+      sorry
+    · sorry
+    · sorry
+  · induction H <;> simp [isNNF] <;> constructor <;> assumption
+
+instance DecidableNNF (φ : Proposition T) (H : NegationNormalForm φ) : Decidable (NegationNormalForm φ) := by
+  apply decidable_of_iff (Proposition.isNNF φ = true) (Proposition.isNNF_iff φ)
 
 inductive Closure (φ : Proposition T) (H : NegationNormalForm φ): Proposition T → Prop where
   | init : Closure φ H φ
@@ -45,28 +78,19 @@ inductive Closure (φ : Proposition T) (H : NegationNormalForm φ): Proposition 
   | residual_next {ψ : Proposition T} {w : Window} :
       Closure φ H ({◯ w} ψ) → NegationNormalForm ψ → Closure φ H ({◯ w} ψ)
 
-/-
 def Proposition.closure (φ : Proposition T) (H : NegationNormalForm φ) : Lean.HashSet (Proposition T) :=
-  let rec buildClosure (set : Lean.HashSet (Proposition T)) : Lean.HashSet (Proposition T) :=
-    let newSet := set.fold (fun acc ψ =>
-      match ψ with
-      | ψ₁ U ψ₂ in w =>
-          if NegationNormalForm ψ₁ ∧ NegationNormalForm ψ₂ then
-            acc.insert ψ₁
-               .insert ψ₂
-          else acc
-      | ψ₁ S ψ₂ in w =>
-          if NegationNormalForm ψ₁ ∧ NegationNormalForm ψ₂ then
-            acc.insert ψ₁
-               .insert ψ₂
-          else acc
-      | {◯ w} ψ₁ =>
-          if NegationNormalForm ψ₁ then
-            acc.insert ({◯ w} ψ₁)
-          else acc
-      | _ => acc
-    ) set
-    if newSet.size > set.size then buildClosure newSet else newSet
+  let acc := Lean.HashSet.empty.insert φ
+  let rec go (acc : Lean.HashSet (Proposition T)) (φ : Proposition T) : Lean.HashSet (Proposition T) :=
+    match φ with
+    | mtt => acc
+    | [[x]] => acc
+    | ~ φ' => go acc φ'
+    | φ' and ψ' => go (go acc φ') ψ'
+    | φ' U ψ' in w => go (go acc φ') ψ'
+    | φ' S ψ' in w => go (go acc φ') ψ'
+  go acc φ
 
-  buildClosure (Lean.HashSet.empty.insert φ)
--/
+-- TODO: closure correct
+theorem Closure_correct (φ : Proposition T) (H : NegationNormalForm φ) :
+    ∀ ψ, Closure φ H ψ ↔ (Proposition.closure φ H).contains ψ :=
+    by sorry

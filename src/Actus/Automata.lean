@@ -160,6 +160,27 @@ namespace TimedFinite
 
 end TimedFinite
 
+/- one clock -/
+namespace TimedAlternating
+  variable (Alphabet : Type) [AtomicProp Alphabet]
+
+  structure Transition where
+    source : State
+    target : @Alternation State
+    symbol : List Alphabet
+    guards : GuardConditions
+    reset : List ClockVar
+    deriving BEq, Hashable, Repr
+
+  structure TAA where
+    states : Lean.HashSet State
+    alphabet : Lean.HashSet Alphabet
+    initialState : State
+    transitions : Lean.HashSet (Transition Alphabet)
+    acceptingStates : Lean.HashSet State
+
+end TimedAlternating
+
 -- timed buchi only comes into play when we think about composing contracts, each of which are finite,
 -- into an infinite time-horizon stream of contracts representing the global financial system
 namespace TimedBuchi
