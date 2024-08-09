@@ -32,6 +32,7 @@ def Clock.incr (x : Clock) (y : Nat) : Clock := { tick := x.tick + y }
 instance : OfNat Clock 0 where
   ofNat := { tick := 0 }
 
+def Clock.toTimestamp (c : Clock) : Timestamp := Timestamp.t c.tick.toUInt64
 -- a limitation: alphabet is singleton rather than `Lean.HashSet`
 def ClockMap : Type := Lean.AssocList ClockVar Clock
 
@@ -75,6 +76,8 @@ inductive Alternation {α : Type} : Type where
 | var : α → Alternation
 | cond : GuardCondition -> Alternation
 | reset_in : ClockVar -> Alternation -> Alternation
+| falls_in : Clock -> Window -> Alternation
+| doesnot_fall_in : Clock -> Window -> Alternation
   deriving BEq, Hashable, Repr
 
 -- to lift this from one-clock, we probably replace the `v` indexing the `|=` with a `ClockMap`. This would be a breaking change.
@@ -86,6 +89,7 @@ inductive Alternation.Eval {α : Type} (M : α × Clock) : ClockMap -> @Alternat
 | var : forall (v : ClockMap), v.toList.contains ({name:=0}, M.2) -> Alternation.Eval M v (Alternation.var M.1)
 | cond : forall v (gc : GuardCondition), (exists (cv : ClockMap), gc.eval cv = true) -> Alternation.Eval M v (Alternation.cond gc)
 | reset_in : forall v, Alternation.Eval M (Lean.AssocList.empty.insert {name:=0} {tick:=0}) a -> Alternation.Eval M v (Alternation.reset_in { name := 0 } a)
+| falls_in : forall v c (w : Window), w.1 ≤ c.toTimestamp ∧ c.toTimestamp < w.2 -> Alternation.Eval M v (Alternation.falls_in c w)
 
 namespace Execution
   structure Entry where

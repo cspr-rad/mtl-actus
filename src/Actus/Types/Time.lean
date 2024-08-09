@@ -16,6 +16,12 @@ instance : LT Timestamp where
     | Timestamp.t _, Timestamp.infinity => true
     | Timestamp.infinity, _ => false
 
+instance : LE Timestamp where
+  le t1 t2 := match t1, t2 with
+    | Timestamp.t time1, Timestamp.t time2 => time1 <= time2
+    | Timestamp.t _, Timestamp.infinity => true
+    | Timestamp.infinity, _ => false
+
 instance : Max Timestamp where
   max t1 t2 := match t1, t2 with
     | Timestamp.t time1, Timestamp.t time2 => if time1 >= time2 then t1 else t2

@@ -1,7 +1,7 @@
 import Actus.Logic
 import Actus.Automata
 
-open MetricTemporal TimedFinite
+open MetricTemporal TimedAlternating
 variable {T : Type} [AtomicProp T]
 
 def Proposition.nnf (p : Proposition T) : Proposition T :=
@@ -94,3 +94,22 @@ def Proposition.closure (φ : Proposition T) (H : NegationNormalForm φ) : Lean.
 theorem Closure_correct (φ : Proposition T) (H : NegationNormalForm φ) :
     ∀ ψ, Closure φ H ψ ↔ (Proposition.closure φ H).contains ψ :=
     by sorry
+
+/-
+inductive Alternation {α : Type} : Type where
+| tru : Alternation
+| fls : Alternation
+| and : Alternation → Alternation → Alternation
+| or : Alternation → Alternation → Alternation
+| var : α → Alternation
+| cond : GuardCondition -> Alternation
+| reset_in : ClockVar -> Alternation -> Alternation
+  deriving BEq, Hashable, Repr
+-/
+
+def transition (φ : Proposition T) (nnfφ : NegationNormalForm φ) (ψ : Proposition T) (clφ : Closure φ nnfφ ψ) (a : T) : @Alternation State :=
+  -- TODO: delta (phi_init, a) = reset_in x (delta (phi, a))
+  sorry
+
+--  | .init => reset_in a (transition φ sorry a)
+--  | .subformula_until_right ψ χ w clU nnfψ nnfχ => Alternation.or
