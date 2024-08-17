@@ -230,12 +230,10 @@ Looking ahead, this work opens up several avenues for future research. These inc
 
 In conclusion, while our work on applying MTL to financial contracts shows promise, it is best viewed as a starting point for further research rather than a fully developed solution. We hope that this initial exploration will stimulate further discussion and investigation at the intersection of formal methods and financial technology, potentially contributing to the development of more reliable and interpretable financial systems in the future.
 
-* Bibliography
-#+PRINT_BIBLIOGRAPHY:
-
 * Acknowledgements
 Thank you to Yves Hauser and Morgan Thomas for comments on a draft.
 
-* Footnotes
+* Bibliography
+#+PRINT_BIBLIOGRAPHY:
 
 [fn:1] Corresponding author: quinn@casper.network
