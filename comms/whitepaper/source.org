@@ -13,7 +13,7 @@
 Casper Association[fn:1]
 
 #+BEGIN_abstract
-A financial contract is an interaction between people involving money. Complex interactions among these parties may result in misunderstandings and errors, potentially leading to financial losses for all involved—an undesirable outcome. Previously, the Algorithmic Contract Types Unified Standard (ACTUS) attempted to tackle this twin problem by rendering interactions as atomic state machines that compose together. In this paper, we take a natural next step to Metric Temporal Logic (MTL) and take a contract to be an MTL /specification/, showing the proof of concept on the principal at maturity loan (PAM). Along the way, we implement MTL in the Lean prover. The code is available at https://github.com/cspr-rad/mtl-actus.
+A financial contract is an agreement that governs monetary interactions between parties, with the interactions themselves being part of the contract's execution. Complex interactions among these parties may result in misunderstandings and errors, potentially leading to financial losses for all involved—an undesirable outcome. Previously, the Algorithmic Contract Types Unified Standard (ACTUS) attempted to tackle this twin problem by rendering interactions as atomic state machines that compose together. In this paper, we take a natural next step to Metric Temporal Logic (MTL) and take a contract to be an MTL /specification/, showing the proof of concept on the principal at maturity loan (PAM). Along the way, we implement MTL in the Lean prover. The code is available at https://github.com/cspr-rad/mtl-actus.
 #+END_abstract
 
 * Introduction
@@ -232,6 +232,9 @@ In conclusion, while our work on applying MTL to financial contracts shows promi
 
 * Bibliography
 #+PRINT_BIBLIOGRAPHY:
+
+* Acknowledgements
+Thank you to Yves Hauser and Morgan Thomas for comments on a draft.
 
 * Footnotes
 
