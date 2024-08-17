@@ -5,7 +5,7 @@
 #+AUTHOR: Mark Greenslade
 #+EMAIL: quinn@casper.network
 #+INSTITUTE: Casper Association
-#+DATE: $\today$ DRAFT
+#+DATE: $\today$
 #+OPTIONS: num:t toc:t
 #+BIBLIOGRAPHY: ./b.bib
 #+CITE_EXPORT: csl ./acm.csl
